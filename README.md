@@ -5,6 +5,7 @@
 Git Good is a gamified coding-practice app, just for UNCC computing students, that turns short daily practice into a habit and lets students earn shareable proof of their progress.
 
 ### ▶ Live prototype: **https://hrwool.github.io/GitGood/**
+### 📖 Design story (storyboard + sketches): **https://hrwool.github.io/GitGood/story**
 
 This is a **clickable prototype** for collecting feedback. Every link works, and progress (XP, streak, badges) is saved in your browser. There's no backend; all data is simulated.
 
@@ -36,10 +37,10 @@ This is a **clickable prototype** for collecting feedback. Every link works, and
 
 | Member | Features designed |
 |---|---|
-| Heidi W. | Achievements, Leaderboard, Classrooms (+ this prototype) |
-| Idol H. | Skill quiz, Streak notifications |
-| Athena D. | Quest page, Pathway |
 | AJ B. | Profile, Streaks page |
+| Athena D. | Quest page, Pathway |
+| Heidi W. | Achievements, Leaderboard, Classrooms |
+| Idol H. | Skill quiz, Streak notifications |
 
 ## Engagement research behind the design
 - **Streaks and streak-saver reminders** are Duolingo's strongest retention levers → streak calendar, at-risk banner, streak freezes.
