@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pick skills · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall">
+    <div class="row"><a class="back" href="signup.html" data-back>‹</a><div class="steps grow"><i class="on"></i><i class="on"></i><i></i></div></div>
+    <h1 style="margin-top:14px">What do you want to get good at?</h1>
+    <p class="sub">Step 2 of 3 · Pick as many as you like</p>
+  </header>
+
+  <div class="content">
+    <div class="speaker">
+      <div class="byte who">🤖</div>
+      <div class="bubble"><b class="name">Prof. Byte</b>Hey <span id="nm"></span>! Your picks shape your daily quests <em>and</em> which classroom I recommend.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Skills</h3><span class="pill green" id="count">0 selected</span></div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Add a custom skill</h3><span class="pill gold">Skill flagging</span></div>
+      <p class="small muted" style="margin-bottom:10px">Heard about something at a career fair? Flag it and we'll mix it into your quests.</p>
+      <form class="row" id="add">
+        <input class="input grow" id="custom" placeholder="e.g. Project management, React…" maxlength="24">
+        <button class="btn btn-dark btn-sm" type="submit">Add</button>
+      </form>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="go" disabled>Continue</button>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  $("#nm").textContent = state.username || "there";
+  const picked = new Set(state.skills);
+  const all = SKILLS.map((s) => ({ ...s }));
+
+  function render() {
+    $("#chips").innerHTML = all.map((s) =>
+      `<button class="chip ${picked.has(s.id) ? "on" : ""}" data-s="${s.id}">${s.icon} ${s.id}${picked.has(s.id) ? " ✓" : ""}</button>`).join("");
+    $("#count").textContent = `${picked.size} selected`;
+    $("#go").disabled = picked.size === 0;
+  }
+  $("#chips").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-s]"); if (!b) return;
+    const id = b.dataset.s;
+    picked.has(id) ? picked.delete(id) : picked.add(id);
+    render();
+  });
+  $("#add").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = $("#custom").value.trim();
+    if (!v) return;
+    if (!all.find((s) => s.id.toLowerCase() === v.toLowerCase())) all.push({ id: v, icon: "✨" });
+    picked.add(all.find((s) => s.id.toLowerCase() === v.toLowerCase()).id);
+    $("#custom").value = "";
+    render();
+    GG.toast(`✨ “${v}” flagged — we'll add it to your quests`);
+  });
+  $("#go").addEventListener("click", () => {
+    state.skills = [...picked];
+    GG.save();
+    location.href = "quiz-intro.html";
+  });
+  render();
+</script>
+</body>
+</html>

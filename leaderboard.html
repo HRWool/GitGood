@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leaderboard · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body data-tab="ranks">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar">
+    <div class="row between"><h1>Leaderboard</h1><span class="pill" style="background:var(--gold-bright);color:var(--green-deep)" id="reset">⏳ 3d left</span></div>
+    <div class="seg" style="margin-top:12px" id="seg">
+      <button data-t="app">App</button><button data-t="class">Class</button><button data-t="friends">Friends</button>
+    </div>
+    <div class="row small" style="margin-top:10px;font-weight:800;opacity:.9" id="scope"></div>
+  </header>
+
+  <div class="content" id="content"></div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, $$, state } = GG;
+  const params = new URLSearchParams(location.search);
+  let tab = params.get("tab") || "app";
+  let classId = params.get("c") || state.joinedClass || "python";
+  const moved = params.get("moved") === "1" && state.lastRankMove;
+
+  function rowHTML(r, extra = "") {
+    return `<div class="lb-row ${r.me ? "me" : ""} ${extra}">
+      <span class="rk">${r.rank}</span>${GG.avatarHTML(r.av, "sm")}
+      <span class="nm">${r.me ? `You <small>@${state.username} · 🔥 ${state.streak}</small>` : r.name}</span>
+      <span class="xp">${r.xp.toLocaleString()} XP</span></div>`;
+  }
+
+  function render() {
+    $$("#seg button").forEach((b) => b.classList.toggle("on", b.dataset.t === tab));
+    const C = CLASSES.find((c) => c.id === classId) || CLASSES[0];
+    $("#scope").innerHTML = tab === "class"
+      ? `<select class="input" id="cls" style="padding:6px 10px;font-size:13px;width:auto;background:rgba(255,255,255,.95)">${CLASSES.filter((c) => !c.locked).map((c) => `<option value="${c.id}" ${c.id === C.id ? "selected" : ""}>${c.icon} ${c.name} · Season 1</option>`).join("")}</select><span class="grow"></span><span>18d left in season</span>`
+      : tab === "friends" ? `<span>👯 You + ${LB_FRIENDS.length} friends · this week</span>` : `<span>🌎 All of UNC Charlotte · this week</span>`;
+    const sel = $("#cls");
+    if (sel) sel.onchange = () => { classId = sel.value; render(); };
+
+    const list = tab === "class" ? LB_CLASS : tab === "friends" ? LB_FRIENDS : LB_APP;
+    const myXp = tab === "class" ? state.classXp : state.xp;
+    const rows = GG.ranked(list, myXp);
+    const me = rows.find((r) => r.me);
+    const above = rows[me.rank - 2];
+    const parts = [];
+
+    if (moved && tab === "app") {
+      parts.push(`<div class="card cream center pop-in">
+        <div style="font-size:34px">🎉</div>
+        <b style="font-size:20px">You moved to #${state.lastRankMove.to}!</b>
+        <div class="small muted">${state.lastRankMove.from !== state.lastRankMove.to ? `Up from #${state.lastRankMove.from}. ` : ""}${above ? `Next: ${above.xp - myXp} XP to pass #${above.rank}` : "You're #1!"}</div>
+        <div class="row" style="margin-top:12px">
+          <a class="btn btn-primary btn-sm grow" href="exercise.html?q=${DAILY.find((q) => !state.doneToday.includes(q)) || "daily-py"}">Another quest</a>
+          <a class="btn btn-ghost btn-sm grow" href="home.html">Done for today</a>
+        </div></div>`);
+    }
+
+    const top = rows.slice(0, 3);
+    parts.push(`<div class="card" style="padding-bottom:0;overflow:hidden">
+      <div class="podium">${[1, 0, 2].map((i) => { const r = top[i]; if (!r) return "<div></div>"; return `<div class="p p${i + 1}">${i === 0 ? `<span class="crown">👑</span>` : ""}<span class="avatar ${i === 0 ? "lg" : ""}">${r.av}</span><span>${r.me ? "You" : r.name.split(" ")[0]}</span><span class="tiny muted">${r.xp.toLocaleString()} XP</span><div class="block">${i + 1}</div></div>`; }).join("")}</div></div>`);
+
+    // List centered on your row: neighbors are more motivating than leaders.
+    const start = Math.max(3, me.rank - 3), end = Math.min(rows.length, me.rank + 2);
+    const win = rows.slice(start, end);
+    parts.push(`<div class="card" style="padding:8px">
+      ${start > 3 ? `<div class="lb-zone">⋯ ${start - 3} more ⋯</div>` : ""}
+      <div class="stack" style="gap:4px">${win.map((r) => rowHTML(r, r.me && moved ? "up" : "")).join("")}</div>
+      ${end < rows.length ? `<div class="lb-zone">⋯ ${rows.length - end} more ⋯</div>` : ""}
+      ${me.rank <= 3 ? `<div class="lb-zone">🏅 You're on the podium!</div>` : ""}
+    </div>`);
+
+    if (above) {
+      const gap = above.xp - myXp;
+      const pct = Math.max(8, Math.min(95, Math.round(myXp / above.xp * 100)));
+      parts.push(`<div class="card" style="background:linear-gradient(135deg,#005035,#00703f);color:#fff">
+        <div class="row between"><b style="font-size:17px">${gap} XP to pass ${above.name.split(" ")[0]}</b><span class="pill" style="background:rgba(255,255,255,.15);color:#fff">#${me.rank} → #${above.rank}</span></div>
+        <div class="bar gold on-dark" style="margin:10px 0 12px"><span data-w="${pct}"></span></div>
+        <div class="row" style="background:rgba(255,255,255,.1);border-radius:14px;padding:10px 12px">
+          <span style="font-size:22px">⏱️</span>
+          <div class="grow"><div class="tiny" style="opacity:.8;font-weight:900">SUGGESTED QUEST · SIZED TO CLOSE THE GAP</div><b>Timed: list loops</b><div class="small" style="opacity:.85">~5 min · +50 XP</div></div>
+          <a class="btn btn-gold btn-sm" href="exercise.html?q=lb-timed">Start</a>
+        </div></div>`);
+    } else {
+      parts.push(`<div class="banner good"><span class="bi">👑</span><span class="grow">You're #1 on this board! Defend your crown with today's quests.</span></div>`);
+    }
+
+    if (tab === "friends") parts.push(`<button class="btn btn-ghost btn-block" id="add-friend">➕ Add friends by username</button>`);
+    parts.push(`<p class="tiny muted center">Weekly boards reset every Monday and class boards reset each season — everyone gets a fresh start. 🌱</p>`);
+
+    $("#content").innerHTML = parts.join("");
+    GG.animateBars($("#content"));
+    const af = $("#add-friend");
+    if (af) af.onclick = () => GG.toast("👯 Friend invites are coming soon!");
+  }
+
+  $("#seg").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-t]"); if (!b) return;
+    tab = b.dataset.t; render();
+  });
+  render();
+  if (moved) setTimeout(() => GG.confettiBurst({ particleCount: 80 }), 300);
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Class · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body data-tab="classes">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall">
+    <div class="row"><a class="back" href="classes.html" aria-label="All classrooms">‹</a><div class="chips scroll grow" id="class-chips"></div></div>
+    <h1 style="margin-top:12px" id="cname"></h1>
+    <p class="sub" id="cmeta"></p>
+    <div class="row" style="margin-top:8px"><div class="bar gold on-dark grow"><span id="sbar"></span></div><span class="pill" style="background:rgba(255,255,255,.18);color:#fff" id="left"></span></div>
+  </header>
+
+  <div class="content" id="content"></div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  const cid = new URLSearchParams(location.search).get("c") || state.joinedClass || "python";
+  const C = CLASSES.find((c) => c.id === cid) || CLASSES[0];
+  document.title = `${C.name} · Git Good`;
+
+  $("#class-chips").innerHTML = CLASSES.filter((c) => !c.locked || c.id === C.id).map((c) =>
+    `<a class="chip ${c.id === C.id ? "on" : ""}" href="class.html?c=${c.id}">${c.icon} ${c.skill}</a>`).join("");
+  $("#cname").textContent = C.name;
+  $("#cmeta").textContent = `Season 1 · Week ${C.week} of ${C.weeks} · ${C.members} students · This week: ${C.topic}`;
+  $("#sbar").dataset.w = Math.round(C.week / C.weeks * 100) - 8;
+  $("#left").textContent = C.locked ? "Season 2" : "18d left";
+
+  function render() {
+    const joined = state.joinedClass === C.id;
+    const doneIds = C.quests.filter((q) => state.classDone.includes(q.id)).map((q) => q.id);
+    const firstOpen = C.quests.find((q) => !doneIds.includes(q.id));
+    const parts = [];
+
+    if (C.locked) {
+      parts.push(`<div class="banner"><span class="bi">🔒</span><span class="grow">This classroom opens in Season 2 (Nov 9). Here's a sneak peek!</span></div>`);
+    } else if (!joined) {
+      parts.push(`<div class="card cream center rise">
+        <div style="font-size:44px">${C.icon}</div><b style="font-size:17px">Join ${C.name}</b>
+        <p class="small muted" style="margin:4px 0 12px">Free · 3 quests a week · ${C.members} Niners already in</p>
+        <button class="btn btn-primary btn-block" id="join">Join classroom</button>
+        ${state.joinedClass ? `<p class="tiny muted" style="margin-top:8px">You can be in more than one classroom per season.</p>` : ""}
+      </div>`);
+    }
+
+    parts.push(`<div class="speaker rise"><div class="byte who">🤖</div>
+      <div class="bubble"><b class="name">Prof. Byte · AI instructor</b>${C.byte}</div></div>`);
+
+    parts.push(`<div class="rise"><div class="row between" style="margin:2px 2px 8px"><b>This week's quests</b><span class="small muted">${doneIds.length} of 3 done</span></div>
+      <div class="stack">${C.quests.map((q) => {
+        const isDone = doneIds.includes(q.id), cur = firstOpen && q.id === firstOpen.id && joined, locked = !isDone && !cur;
+        const href = `exercise.html?q=${q.q}&c=${C.id}&cq=${q.id}`;
+        return `<div class="quest ${isDone ? "done" : cur ? "current" : "locked"}">
+          <div class="qi">${isDone ? "✓" : locked ? "🔒" : "▶"}</div>
+          <div class="grow"><h4>${q.title}</h4><div class="meta">${isDone ? "Completed · XP earned" : q.meta}</div></div>
+          ${cur ? `<a class="btn btn-primary btn-sm pulse" href="${href}">Start</a>` : isDone ? `<span class="pill green">Done</span>` : ""}
+        </div>`;
+      }).join("")}</div>
+      <p class="tiny muted" style="margin:6px 2px 0">Quests unlock in order. Timed quests reuse timed practice ⏱️</p></div>`);
+
+    if (!C.locked) {
+      const rows = GG.ranked(LB_CLASS, joined ? state.classXp : 0);
+      const me = rows.find((r) => r.me);
+      const win = rows.slice(Math.max(0, me.rank - 2), Math.max(0, me.rank - 2) + 3);
+      parts.push(`<div class="card rise">
+        <div class="card-h"><h3>Class standing</h3><a href="leaderboard.html?tab=class&c=${C.id}">See all ›</a></div>
+        <div class="stack" style="gap:4px">${win.map((r) => `<div class="lb-row ${r.me ? "me" : ""}"><span class="rk">${r.rank}</span>${GG.avatarHTML(r.av, "sm")}<span class="nm">${r.name}</span><span class="xp">${r.xp}</span></div>`).join("")}</div>
+        <div class="small" style="margin-top:10px;color:#8a7426;font-weight:800">🏆 Finish top 3 to earn the Season 1 badge</div>
+      </div>`);
+      parts.push(`<a class="btn btn-ghost btn-block" href="season.html">⏩ Demo: jump to end of season</a>`);
+    }
+    $("#content").innerHTML = parts.join("");
+    const j = $("#join");
+    if (j) j.onclick = () => {
+      state.joinedClass = C.id;
+      if (!state.classXp) state.classXp = 0;
+      const isNew = GG.unlockBadge("class-act");
+      GG.save();
+      GG.confettiBurst({ particleCount: 60 });
+      GG.toast(isNew ? "🎓 Joined! Badge unlocked: Class Act" : `🎓 Welcome to ${C.name}!`);
+      render();
+    };
+  }
+  render();
+</script>
+</body>
+</html>

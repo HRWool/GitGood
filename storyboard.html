@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Design story · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .feat { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .feat .card h3 { font-size: 16px; margin-bottom: 6px; }
+  .feat .card ul { margin: 0; padding-left: 18px; color: var(--ink-2); line-height: 1.5; font-size: 14px; }
+  .research { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); font-size: 14px; }
+  .research th, .research td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .research th { background: var(--mint); color: var(--green); font-weight: 900; }
+  .table-wrap { overflow-x: auto; }
+  h2.sec { font-size: 24px; margin: 36px 0 6px; }
+  .team { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+</style>
+</head>
+<body class="web">
+  <header class="web-top">
+    <div class="in">
+      <a class="lg" href="index.html"><img src="assets/logo.png" alt="">Git Good</a>
+      <a class="btn btn-gold btn-sm" href="index.html">▶ Open the prototype</a>
+    </div>
+  </header>
+
+  <main class="web-wrap">
+    <span class="pill gold">ITSC 3155 · Group 7 · Fall 2026</span>
+    <h1 style="font-size:34px;margin-top:10px">Behind the design</h1>
+    <p class="sb-intro">Git Good turns short daily coding practice into a habit for UNC Charlotte computing students — and lets them earn shareable proof of their progress. This page walks through our storyboard (persona <b>Maya</b>, a busy CS sophomore) and links each panel to the live screen it became.</p>
+    <div class="team">
+      <span class="pill green">Heidi W. — Achievements, Leaderboard, Classrooms</span>
+      <span class="pill green">Idol H. — Skill quiz, Streak notifications</span>
+      <span class="pill green">Athena D. — Quest page, Pathway</span>
+      <span class="pill green">AJ B. — Profile, Streaks page</span>
+    </div>
+
+    <h2 class="sec">Storyboard → prototype</h2>
+    <p class="muted" style="margin-bottom:16px">Click any sketch to enlarge it.</p>
+    <div id="steps"></div>
+
+    <h2 class="sec">Final feature list</h2>
+    <div class="feat">
+      <div class="card"><h3>🚀 Onboarding</h3><ul><li>Sign up with a UNCC email only</li><li>Username + avatar</li><li>Pick skills + flag custom skills</li></ul></div>
+      <div class="card"><h3>🧠 Adaptive learning</h3><ul><li>Short, skippable first quest</li><li>Microlessons framed as customer requests</li><li>Timed coding practice</li><li>Pathway that unlocks in order</li></ul></div>
+      <div class="card"><h3>🔥 Engagement</h3><ul><li>Streaks, streak freezes, at-risk reminders</li><li>3 daily quests + bonus chest</li><li>XP, levels, mystery-chest rewards</li><li>Notification preferences</li></ul></div>
+      <div class="card"><h3>🏆 Leaderboard</h3><ul><li>App / Class / Friends scopes</li><li>Centered on your row with exact XP gap</li><li>Suggested quest sized to close the gap</li></ul></div>
+      <div class="card"><h3>🎓 AI Classrooms</h3><ul><li>4–6 seasonal skill tracks</li><li>Prof. Byte posts weekly topics + quests</li><li>Class leaderboards reset each season</li></ul></div>
+      <div class="card"><h3>🏅 Achievements</h3><ul><li>Trophy case with locked “to-do” badges</li><li>Share link, LinkedIn, resume line, QR</li><li>Public verify page — no login needed</li></ul></div>
+    </div>
+    <p class="small muted" style="margin-top:12px"><b>Out of scope for now:</b> AI project-idea generator, AI resume feedback, employer accounts (replaced by linkable, verifiable achievements).</p>
+
+    <h2 class="sec">Why it's engaging — the research</h2>
+    <p class="muted" style="margin-bottom:14px">Each mechanic maps to published findings on habit-forming apps and motivation in learning.</p>
+    <div class="table-wrap"><table class="research">
+      <tr><th>Finding</th><th>Source</th><th>Where you'll see it</th></tr>
+      <tr><td>Streaks are the strongest retention lever; “streak saver” reminders worked best</td><td>Duolingo retention team</td><td>Home streak calendar, at-risk banner, streak freezes, notifications</td></tr>
+      <tr><td>Tiny visual cues change behavior (a red dot raised daily actives 1.6%)</td><td>Duolingo experiments</td><td>Red dot on Badges tab, pulsing Start buttons</td></tr>
+      <tr><td>Trigger → Action → Variable reward → Investment</td><td>Nir Eyal, <i>Hooked</i></td><td>Customer-request reminders, 5-min quests, mystery chest, skills/avatar/pinned badges</td></tr>
+      <tr><td>Motivation needs competence, autonomy and relatedness</td><td>Self-Determination Theory</td><td>Levels + progress bars, choose skills/classes/skip, class &amp; friend boards</td></tr>
+      <tr><td>Leaderboards help when they feel winnable, hurt when they shame</td><td>SDT gamification studies</td><td>Board centered on neighbors, exact XP gap, weekly/seasonal resets</td></tr>
+    </table></div>
+
+    <h2 class="sec">Team sketches</h2>
+    <p class="muted" style="margin-bottom:14px">Design Sprint Day 2 solution sketches and Heidi's hi-fi mockups.</p>
+    <div class="sb-gallery" id="gallery"></div>
+  </main>
+
+  <div class="lightbox" id="lb"><img alt=""></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const STEPS = [
+    { img: "sb1-problem-signup", title: "The problem → Sign up", text: "Maya needs job skills but has no free time. She signs up with her college email and picks a username and avatar.", links: [["Sign up", "signup.html"]] },
+    { img: "sb2-skills-quiz", title: "Choose skills → First quiz", text: "Her skill picks shape her pathway. The first quiz is a quick, skippable “customer story.”", links: [["Pick skills", "skills.html"], ["First quest", "quiz-intro.html"]] },
+    { img: "sb3-exercise-reward", title: "First exercise → Reward", text: "She fills in the blanks of starter code with a hint button, then gets a badge, starts a streak and can share it.", links: [["Exercise", "exercise.html?q=first"]] },
+    { img: "sb4-notify-quests", title: "Notified → Quests & pathway", text: "The next day a reminder reads like a customer request. New quests arrive daily and the pathway unlocks in order.", links: [["Notifications", "notifications.html"], ["Home", "home.html"]] },
+    { img: "sb5-leaderboard-class", title: "Leaderboard → Classroom", text: "She sees her rank, the XP to rank up and a suggested quest. She joins a seasonal classroom where Prof. Byte posts weekly topics.", links: [["Leaderboard", "leaderboard.html"], ["Class home", "class.html?c=python"]] },
+    { img: "sb6-payoff", title: "Payoff", text: "A 30-day streak and a trophy case of badges she links on her resume and LinkedIn — real proof of effort and skills.", links: [["Achievements", "achievements.html"], ["Verify page", "verify.html?a=7f3k"]] },
+  ];
+  document.getElementById("steps").innerHTML = STEPS.map((s, i) => `
+    <div class="sb-step">
+      <img src="assets/sketches/${s.img}.jpg" alt="Storyboard panel: ${s.title}" loading="lazy">
+      <div><h3><span class="num">${i + 1}</span>${s.title}</h3><div class="by">Storyboard by Heidi W.</div><p>${s.text}</p>
+      <div class="row" style="flex-wrap:wrap">${s.links.map(([t, h]) => `<a class="btn btn-primary btn-sm" href="${h}">Open ${t} →</a>`).join("")}</div></div>
+    </div>`).join("");
+
+  const GALLERY = [
+    ["idol-quiz", "Skill quiz intro", "Idol H."], ["idol-exercise", "Example quiz exercise", "Idol H."], ["idol-notify", "Streak notifications", "Idol H."],
+    ["athena-quests", "Quest page", "Athena D."], ["athena-pathway", "Pathway", "Athena D."], ["aj-streak-profile", "Streaks + profile", "AJ B."],
+    ["heidi-crazy8", "Crazy 8's", "Heidi W."], ["heidi-achievements", "Achievements mockup", "Heidi W."], ["heidi-leaderboard", "Leaderboard mockup", "Heidi W."], ["heidi-classroom", "AI classroom mockup", "Heidi W."],
+  ];
+  document.getElementById("gallery").innerHTML = GALLERY.map(([f, t, by]) =>
+    `<figure><img src="assets/sketches/${f}.jpg" alt="${t} sketch by ${by}" loading="lazy"><figcaption>${t}<small>${by}</small></figcaption></figure>`).join("");
+
+  const lb = document.getElementById("lb");
+  document.addEventListener("click", (e) => {
+    const img = e.target.closest(".sb-step img, .sb-gallery img");
+    if (img) { lb.querySelector("img").src = img.src; lb.classList.add("show"); }
+    else if (e.target.closest("#lb")) lb.classList.remove("show");
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("show"); });
+</script>
+</body>
+</html>

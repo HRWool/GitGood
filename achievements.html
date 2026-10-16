@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Achievements · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body data-tab="badges">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar">
+    <div class="row between"><h1>Achievements</h1><button class="back" id="share-profile" aria-label="Share profile">🔗</button></div>
+    <div class="row" style="margin-top:12px">
+      <span id="av"></span>
+      <div class="grow"><b style="font-size:16px" id="un"></b><div class="small" style="opacity:.85" id="summary"></div></div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div id="just"></div>
+
+    <div class="chips scroll" id="filters"></div>
+
+    <div class="card">
+      <div class="badge-grid" id="grid"></div>
+      <p class="tiny muted center" style="margin-top:12px">Tap a locked badge to see how to earn it 👆</p>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Almost there</h3><span class="pill flame">Come back tomorrow!</span></div>
+      <div class="stack" id="almost"></div>
+    </div>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  let filter = "All";
+  state.newBadge = false; GG.save(); // opening the trophy case clears the red dot
+
+  $("#av").innerHTML = GG.avatarHTML(state.avatar, "lg");
+  $("#un").textContent = "@" + state.username;
+  $("#summary").textContent = `${state.earned.length} of ${BADGES.length} earned · ${state.xp.toLocaleString()} XP`;
+
+  const prettyLink = (b) => `gitgood.app/a/${b.slug}`;
+  const realLink = (b) => GG.siteURL(`verify.html?a=${b.slug}`);
+
+  function drawJust() {
+    const b = state.justUnlocked && GG.badge(state.justUnlocked);
+    if (!b) { $("#just").innerHTML = ""; return; }
+    $("#just").innerHTML = `<div class="card cream rise">
+      <div class="row">${GG.badgeHTML(b, "lg")}
+        <div class="grow"><div class="tiny" style="font-weight:900;color:#8a7426;letter-spacing:.08em">JUST UNLOCKED</div><b style="font-size:18px">${b.name}</b><div class="small muted">Earned ${state.earnedOn[b.id] || GG.today()}</div></div></div>
+      <div class="row" style="margin-top:12px">
+        <code class="input grow" style="padding:9px 12px;font-family:var(--mono);font-size:12.5px;background:#fff">${prettyLink(b)}</code>
+        <button class="btn btn-dark btn-sm" data-copy="${b.id}">Copy</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-sm grow" data-li="${b.id}">in LinkedIn</button>
+        <button class="btn btn-ghost btn-sm grow" data-resume="${b.id}">📄 Resume</button>
+        <button class="btn btn-ghost btn-sm grow" data-qr="${b.id}">▦ QR</button>
+      </div></div>`;
+    wire($("#just"));
+  }
+
+  const TYPES = ["All", "Skills", "Streaks", "Seasons"];
+  function drawFilters() {
+    $("#filters").innerHTML = TYPES.map((t) => `<button class="chip ${t === filter ? "on" : ""}" data-f="${t}">${t}</button>`).join("");
+  }
+  $("#filters").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; filter = b.dataset.f; drawFilters(); drawGrid(); });
+
+  function drawGrid() {
+    const list = BADGES.filter((b) => filter === "All" || b.type === filter)
+      .sort((a, b) => GG.earned(b.id) - GG.earned(a.id));
+    $("#grid").innerHTML = list.map((b) => `<button class="badge-btn pop-in" data-b="${b.id}">${GG.badgeHTML(b)}<span>${GG.earned(b.id) ? b.name : b.name}</span></button>`).join("");
+  }
+  $("#grid").addEventListener("click", (e) => { const b = e.target.closest("[data-b]"); if (b) detail(b.dataset.b); });
+
+  function drawAlmost() {
+    const close = BADGES.filter((b) => !GG.earned(b.id) && b.goal).map((b) => ({ b, p: GG.badgeProgress(b) }))
+      .sort((x, y) => y.p.pct - x.p.pct).slice(0, 3);
+    $("#almost").innerHTML = close.map(({ b, p }) => `<button class="row" style="text-align:left" data-b="${b.id}">
+      <span style="font-size:22px">${b.icon}</span>
+      <div class="grow"><div class="row between small"><b>${b.name}</b><span class="muted">${p.have}/${p.goal}</span></div><div class="bar flame" style="margin-top:5px"><span data-w="${p.pct}"></span></div></div></button>`).join("");
+    $("#almost").querySelectorAll("[data-b]").forEach((x) => (x.onclick = () => detail(x.dataset.b)));
+    GG.animateBars($("#almost"));
+  }
+
+  function detail(id) {
+    const b = GG.badge(id), on = GG.earned(id), p = GG.badgeProgress(b);
+    GG.openSheet(`<div class="center">
+      <div class="row" style="justify-content:center;margin:6px 0 10px">${on ? `<span class="badge xl earned">${b.icon}</span>` : `<span class="badge xl locked" style="filter:grayscale(.6);opacity:.8">${b.icon}</span>`}</div>
+      <span class="pill ${on ? "gold" : "grey"}">${b.type} · ${on ? "Earned " + (state.earnedOn[id] || GG.today()) : "Locked"}</span>
+      <h2 style="margin:10px 0 4px">${b.name}</h2>
+      <p class="muted">${b.req}</p>
+      ${on ? "" : `<div style="margin:14px 0 4px"><div class="row between small"><b>Progress</b><span>${p.have}/${p.goal}</span></div><div class="bar flame" style="margin-top:6px"><span data-w="${p.pct}"></span></div></div>`}
+      <div class="row" style="margin-top:16px">
+        ${on ? `<button class="btn btn-gold grow" data-share="${id}">🔗 Share</button><button class="btn btn-ghost grow" data-pin="${id}">${state.pinned.includes(id) ? "📌 Pinned" : "📌 Pin"}</button>`
+             : `<a class="btn btn-primary btn-block" href="home.html">Go earn it →</a>`}
+      </div></div>`, (s) => { GG.animateBars(s); wire(s); });
+  }
+
+  function share(id) {
+    const b = GG.badge(id);
+    GG.openSheet(`<h3 style="margin-bottom:12px">Share achievement</h3>
+      <div class="card cream row">${GG.badgeHTML(b)}<div class="grow"><b>${b.name}</b><div class="small muted">Earned ${state.earnedOn[id] || GG.today()} · Verified by Git Good</div></div></div>
+      <div class="row" style="margin:12px 0">
+        <code class="input grow" style="padding:9px 12px;font-family:var(--mono);font-size:12.5px">${prettyLink(b)}</code>
+        <button class="btn btn-dark btn-sm" data-copy="${id}">Copy</button>
+      </div>
+      <div class="stack">
+        <button class="btn btn-ghost btn-block" data-li="${id}">in Add to LinkedIn</button>
+        <button class="btn btn-ghost btn-block" data-resume="${id}">📄 Copy for resume</button>
+        <button class="btn btn-ghost btn-block" data-qr="${id}">▦ Show QR code</button>
+        <a class="btn btn-primary btn-block" href="verify.html?a=${b.slug}">🌐 Open public verify page</a>
+      </div>
+      <div class="qr" id="qr"></div>`, wire);
+  }
+
+  function wire(root) {
+    root.querySelectorAll("[data-copy]").forEach((x) => (x.onclick = () => GG.copy(realLink(GG.badge(x.dataset.copy)), "Verify link copied")));
+    root.querySelectorAll("[data-li]").forEach((x) => (x.onclick = () => GG.toast("in Would open LinkedIn ▸ Add certification, pre-filled", 2800)));
+    root.querySelectorAll("[data-resume]").forEach((x) => (x.onclick = () => {
+      const b = GG.badge(x.dataset.resume);
+      GG.copy(`Git Good — ${b.name} (verified, ${state.earnedOn[b.id] || GG.today()}) · ${realLink(b)}`, "Resume line copied");
+    }));
+    root.querySelectorAll("[data-qr]").forEach((x) => (x.onclick = () => {
+      const id = x.dataset.qr;
+      let box = root.querySelector("#qr");
+      if (!box) { share(id); setTimeout(() => qr(document.querySelector(".sheet #qr"), id), 350); return; }
+      qr(box, id);
+    }));
+    root.querySelectorAll("[data-share]").forEach((x) => (x.onclick = () => share(x.dataset.share)));
+    root.querySelectorAll("[data-pin]").forEach((x) => (x.onclick = () => {
+      const id = x.dataset.pin, i = state.pinned.indexOf(id);
+      if (i >= 0) state.pinned.splice(i, 1); else { if (state.pinned.length >= 3) state.pinned.shift(); state.pinned.push(id); }
+      GG.save(); x.textContent = state.pinned.includes(id) ? "📌 Pinned" : "📌 Pin";
+      GG.toast(state.pinned.includes(id) ? "📌 Pinned to your profile" : "Unpinned");
+    }));
+  }
+  function qr(box, id) {
+    if (!box) return;
+    box.innerHTML = `<p class="small muted" style="margin-bottom:8px">Scan to open the verify page 📱</p>`;
+    const holder = document.createElement("div");
+    box.appendChild(holder);
+    if (typeof QRCode === "function") new QRCode(holder, { text: realLink(GG.badge(id)), width: 170, height: 170, colorDark: "#005035", colorLight: "#ffffff" });
+    else holder.textContent = realLink(GG.badge(id));
+    box.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+
+  $("#share-profile").onclick = () => GG.copy(GG.siteURL(`verify.html?a=${GG.badge(state.pinned[0] || state.earned[0] || "streak-7").slug}`), "Profile link copied");
+
+  drawJust(); drawFilters(); drawGrid(); drawAlmost();
+  const s = new URLSearchParams(location.search).get("share");
+  if (s && GG.earned(s)) setTimeout(() => share(s), 250);
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Git Good — Quit Forking Around</title>
+<meta name="description" content="Clickable prototype of Git Good, a gamified daily coding-practice app for UNC Charlotte computing students. ITSC 3155 Group 7.">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="stage"><div class="device"><div class="screen">
+  <div class="landing">
+    <div>
+      <img class="logo" src="assets/logo.png" alt="Git Good logo">
+      <h1>Git Good</h1>
+      <p class="tagline">Quit Forking Around.</p>
+    </div>
+
+    <div class="props">
+      <div class="prop rise"><span>⚡</span><div>10-minute daily quests<small>Bite-sized coding practice that fits between classes</small></div></div>
+      <div class="prop rise"><span>🔥</span><div>Streaks, XP &amp; leaderboards<small>Build the habit and climb with your classmates</small></div></div>
+      <div class="prop rise"><span>🏅</span><div>Badges you can link<small>Verified proof of your skills for your resume</small></div></div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-gold btn-block" href="signup.html">Get started — it's free</a>
+      <a class="btn-text" href="home.html" id="have-account">I already have an account</a>
+      <p class="tiny" style="opacity:.7">Exclusively for UNC Charlotte computing students 💚💛</p>
+    </div>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // "I already have an account" drops you into the week-in demo account.
+  GG.$("#have-account").addEventListener("click", (e) => {
+    if (GG.state.fresh) { e.preventDefault(); GG.fastForward(); location.href = "home.html"; }
+  });
+</script>
+</body>
+</html>

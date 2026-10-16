@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classrooms · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-tab="classes">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall">
+    <h1>Classrooms</h1>
+    <div class="row small" style="margin-top:8px;font-weight:800"><span id="season-label"></span><span class="grow"></span><span id="season-left"></span></div>
+    <div class="bar gold on-dark" style="margin-top:6px"><span id="season-bar"></span></div>
+  </header>
+
+  <div class="content">
+    <div class="speaker rise">
+      <div class="byte who">🤖</div>
+      <div class="bubble" id="byte-msg"></div>
+    </div>
+
+    <div id="mine"></div>
+
+    <div class="sec-title" id="lineup-title">This season's lineup</div>
+    <div class="tiles" id="tiles"></div>
+    <p class="tiny muted center">Recommended from your onboarding skills ✨</p>
+
+    <div class="card flat">
+      <h3 style="font-size:15px;margin-bottom:8px">How seasons work</h3>
+      <div class="stack small">
+        <div class="row"><span>📅</span><span>Each season runs <b>4 weeks</b> with a new topic every week.</span></div>
+        <div class="row"><span>🔄</span><span>Class leaderboards <b>reset</b> each season, so newcomers can win too.</span></div>
+        <div class="row"><span>🏆</span><span>Finish in the <b>top 3</b> to earn a shareable Season badge.</span></div>
+        <div class="row"><span>🎲</span><span>The lineup <b>rotates</b> — new classrooms appear every season.</span></div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  const s2 = new URLSearchParams(location.search).get("season") === "2";
+  // Season 2 preview: Git unlocks, Java rotates out.
+  const lineup = CLASSES.map((c) => Object.assign({}, c, s2 && c.id === "git" ? { locked: false, level: "Beginner", members: 12 } : {}, s2 && c.id === "java" ? { rotatedOut: true } : {}));
+  const rec = lineup.find((c) => !c.locked && !c.rotatedOut && state.skills.includes(c.skill)) || lineup[0];
+
+  $("#season-label").textContent = s2 ? "Season 2 · starts Nov 9" : "Season 1 · Week 3 of 4";
+  $("#season-left").textContent = s2 ? "Sign-ups open 🎉" : "⏳ 18 days left";
+  $("#season-bar").dataset.w = s2 ? 4 : 68;
+  $("#byte-msg").innerHTML = s2
+    ? `<b class="name">Prof. Byte · AI instructor</b>Season 2 lineup is here! <b>Git &amp; Command Line</b> is new, and Java Intermediate is taking a break. Pick your next class!`
+    : `<b class="name">Prof. Byte · AI instructor</b>I host every classroom! Each week I post a topic and three quests. Based on your skills, I think you'll love <b>${rec.name}</b>.`;
+  $("#lineup-title").textContent = s2 ? "Season 2 lineup" : "This season's lineup";
+
+  const mine = CLASSES.find((c) => c.id === state.joinedClass);
+  if (mine && !s2) {
+    $("#mine").innerHTML = `<a class="card row rise" href="class.html?c=${mine.id}">
+      <div class="tile" style="background:${mine.color};min-height:0;padding:10px;box-shadow:none"><span class="ti">${mine.icon}</span></div>
+      <div class="grow"><div class="tiny muted" style="font-weight:900">YOUR CLASSROOM</div><b>${mine.name}</b><div class="small muted">${state.classDone.length}/3 quests this week · You're #${GG.ranked(LB_CLASS, state.classXp).find((r) => r.me).rank} of ${mine.members}</div></div>
+      <span class="btn btn-primary btn-sm">Open</span></a>`;
+  }
+
+  $("#tiles").innerHTML = lineup.map((c) => {
+    if (c.locked) return `<button class="tile locked rise" data-locked="${c.name}"><span class="ti">🔒</span><div><b>${c.name}</b><small>Season 2</small></div></button>`;
+    const isRec = c.id === rec.id;
+    return `<a class="tile rise ${isRec ? "rec" : ""}" href="class.html?c=${c.id}" style="background:${c.color};${c.dark ? "color:var(--green-deep)" : ""};${c.rotatedOut ? "opacity:.5" : ""}">
+      ${isRec ? `<span class="rec-tag">★ For you</span>` : ""}
+      <span class="ti">${c.icon}</span>
+      <div><b>${c.name}</b><small>${c.rotatedOut ? "Rotating out" : `${c.level} · ${c.members} students`}</small></div></a>`;
+  }).join("");
+  $("#tiles").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-locked]");
+    if (b) GG.toast(`🔒 ${b.dataset.locked} opens in Season 2 (Nov 9)`);
+  });
+</script>
+</body>
+</html>

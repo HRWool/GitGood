@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Profile · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-tab="profile">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall center">
+    <div class="row between"><span></span><span class="pill gold" style="background:rgba(255,255,255,.15);color:#fff">UNC Charlotte · CS</span><a class="back" href="notifications.html" aria-label="Notification settings">🔔</a></div>
+    <div style="display:grid;justify-items:center;gap:6px;margin-top:6px">
+      <div class="ring" id="lvl-ring" style="--size:112px;--c:var(--gold-bright)"><div id="av" style="background:transparent"></div></div>
+      <h1 style="font-size:22px" id="nm"></h1>
+      <p class="sub" id="un"></p>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card" style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:4px" id="stats"></div>
+
+    <div class="card">
+      <div class="card-h"><h3>My skills</h3><button class="link" id="add-skill">+ Add skill</button></div>
+      <div class="chips" id="skills"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Pinned badges</h3><button class="link" id="edit-pins">Edit</button></div>
+      <div class="row" style="justify-content:space-around" id="pins"></div>
+    </div>
+
+    <div class="card" id="path">
+      <div class="card-h"><h3>Learning paths</h3><span class="pill green">Unlocks in order</span></div>
+      <div class="stack" id="paths"></div>
+    </div>
+
+    <div class="card cream">
+      <div class="card-h"><h3>Inventory</h3></div>
+      <div class="row"><span style="font-size:34px">🧊</span><div class="grow"><b>Streak Freeze × <span id="fz"></span></b><div class="small muted">Auto-protects your streak if you miss a day. Win more from mystery chests!</div></div></div>
+    </div>
+
+    <div class="card flat stack">
+      <a class="row between" href="notifications.html"><b>🔔 Notification settings</b><span>›</span></a>
+      <a class="row between" id="public" href="verify.html"><b>🌐 View my public profile</b><span>›</span></a>
+      <button class="row between" id="share"><b>🔗 Copy profile link</b><span>›</span></button>
+      <button class="row between" id="restart"><b style="color:#C7302B">↺ Restart demo</b><span>›</span></button>
+    </div>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  const lvl = GG.level();
+  const skillIcon = (s) => (SKILLS.find((x) => x.id === s) || { icon: "✨" }).icon;
+
+  $("#av").innerHTML = `<span class="avatar xl">${state.avatar}</span>`;
+  $("#lvl-ring").dataset.p = lvl.pct;
+  $("#nm").textContent = state.name || state.username;
+  $("#un").innerHTML = `@${state.username} · <b style="color:var(--gold-bright)">Level ${lvl.n}</b> · ${lvl.need - lvl.into} XP to next`;
+  $("#stats").innerHTML = [
+    ["🔥", state.streak, "streak"], ["⚡", state.xp.toLocaleString(), "XP"], ["🏅", state.earned.length, "badges"], ["🏆", "#" + GG.appRank(), "rank"],
+  ].map(([i, v, l]) => `<div><div style="font-size:20px">${i}</div><b style="font-size:17px">${v}</b><div class="tiny muted">${l}</div></div>`).join("");
+
+  function drawSkills() {
+    $("#skills").innerHTML = state.skills.length
+      ? state.skills.map((s) => `<span class="chip on">${skillIcon(s)} ${s}</span>`).join("")
+      : `<span class="small muted">No skills yet — add one!</span>`;
+  }
+  $("#add-skill").onclick = () => GG.openSheet(`
+    <h3>Add a skill you want to grow</h3>
+    <p class="small muted" style="margin:4px 0 12px">Your daily quests will start mixing it in.</p>
+    <div class="chips" style="margin-bottom:12px">${SKILLS.filter((s) => !state.skills.includes(s.id)).map((s) => `<button class="chip" data-s="${s.id}">${s.icon} ${s.id}</button>`).join("")}</div>
+    <form class="row" id="cs"><input class="input grow" placeholder="Or type your own…" maxlength="24"><button class="btn btn-primary btn-sm">Add</button></form>`, (sh) => {
+    const add = (v) => { if (v && !state.skills.includes(v)) { state.skills.push(v); GG.save(); drawSkills(); drawPaths(); } GG.closeSheet(); GG.toast(`✨ ${v} added to your quests`); };
+    sh.querySelectorAll("[data-s]").forEach((b) => (b.onclick = () => add(b.dataset.s)));
+    sh.querySelector("#cs").onsubmit = (e) => { e.preventDefault(); add(e.target.querySelector("input").value.trim()); };
+  });
+
+  function drawPins() {
+    const pins = state.pinned.filter(GG.earned);
+    $("#pins").innerHTML = pins.length
+      ? pins.map((id) => { const b = GG.badge(id); return `<a class="badge-btn" href="achievements.html">${GG.badgeHTML(b)}${b.name}</a>`; }).join("")
+      : `<span class="small muted">Pin up to 3 badges to show them off.</span>`;
+  }
+  $("#edit-pins").onclick = () => GG.openSheet(`
+    <h3>Pin up to 3 badges</h3><p class="small muted" style="margin:4px 0 12px">Pinned badges show first on your public profile.</p>
+    <div class="badge-grid">${state.earned.map((id) => { const b = GG.badge(id); return `<button class="badge-btn" data-b="${id}" style="opacity:${state.pinned.includes(id) ? 1 : .45}">${GG.badgeHTML(b, "sm")}${b.name}</button>`; }).join("")}</div>
+    <button class="btn btn-primary btn-block" style="margin-top:14px" data-close>Done</button>`, (sh) => {
+    sh.querySelectorAll("[data-b]").forEach((b) => (b.onclick = () => {
+      const id = b.dataset.b, i = state.pinned.indexOf(id);
+      if (i >= 0) state.pinned.splice(i, 1);
+      else { if (state.pinned.length >= 3) state.pinned.shift(); state.pinned.push(id); }
+      GG.save(); drawPins();
+      sh.querySelectorAll("[data-b]").forEach((x) => (x.style.opacity = state.pinned.includes(x.dataset.b) ? 1 : .45));
+    }));
+  });
+
+  const PATHS = { Python: [9, 15, "Python Fundamentals"], Web: [3, 12, "Web Foundations"], Java: [6, 14, "Java Essentials"], SQL: [1, 10, "SQL Basics"], DSA: [2, 16, "Data Structures"], Git: [0, 8, "Git & CLI"] };
+  function drawPaths() {
+    $("#paths").innerHTML = (state.skills.length ? state.skills : ["Python"]).map((s) => {
+      const [d, t, name] = PATHS[s] || [0, 10, s + " Starter"];
+      return `<div><div class="row between small"><b>${skillIcon(s)} ${name}</b><span class="muted">${d}/${t} lessons</span></div><div class="bar" style="margin-top:6px"><span data-w="${Math.round(d / t * 100)}"></span></div></div>`;
+    }).join("");
+    GG.animateBars($("#paths"));
+  }
+
+  $("#fz").textContent = state.freezes;
+  const showcase = GG.badge(state.pinned[0] || state.earned[0] || "streak-7");
+  $("#public").href = `verify.html?a=${showcase.slug}`;
+  $("#share").onclick = () => GG.copy(GG.siteURL(`verify.html?a=${showcase.slug}`), "Profile link copied");
+  $("#restart").onclick = GG.restart;
+  drawSkills(); drawPins(); drawPaths();
+</script>
+</body>
+</html>

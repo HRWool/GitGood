@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>First quest · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall">
+    <div class="row"><a class="back" href="skills.html" data-back>‹</a><div class="steps grow"><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+    <h1 style="margin-top:14px">Your first quest</h1>
+    <p class="sub">Step 3 of 3 · Quick, easy and totally skippable</p>
+  </header>
+
+  <div class="content">
+    <div class="card cream center pop-in">
+      <div style="font-size:64px;line-height:1.1">☕</div>
+      <span class="pill gold" style="margin-top:6px">INTRO · LOOPS</span>
+      <h2 style="margin:8px 0 4px;font-size:22px">A customer needs your help!</h2>
+      <p class="muted small">Every Git Good quest is a real-world request — not an exam.</p>
+    </div>
+
+    <div class="speaker rise">
+      <div class="avatar lg who">☕</div>
+      <div class="bubble cream"><b class="name">Prospector Café · Customer</b>“Hi! We sold 3, 5 and 8 lattes this morning. Can you write a loop that adds them up so I know how many cups to restock?”</div>
+    </div>
+
+    <div class="card flat rise">
+      <h3 style="font-size:15px;margin-bottom:8px">Summary</h3>
+      <div class="stack small">
+        <div class="row"><span>🎯</span><span>Fill in 2 blanks in a short Python <b>for</b> loop</span></div>
+        <div class="row"><span>⏱️</span><span>About 5 minutes · Easy</span></div>
+        <div class="row"><span>🎁</span><span>+50 XP, your first badge and a mystery chest</span></div>
+      </div>
+    </div>
+
+    <a class="btn btn-primary btn-block pulse" href="exercise.html?q=first">Get started</a>
+    <a class="btn btn-text btn-block" href="home.html" id="skip">Skip this quiz</a>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  GG.$("#skip").addEventListener("click", () => { try { sessionStorage.setItem("gg-skipped", "1"); } catch (e) { /* ignore */ } });
+</script>
+</body>
+</html>

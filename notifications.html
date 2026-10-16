@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notifications · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-tab="profile">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar">
+    <div class="row"><a class="back" href="profile.html" data-back>‹</a><div class="grow"><h1 style="font-size:20px">Notifications</h1><p class="sub">Reminders that feel like requests, not nagging</p></div></div>
+  </header>
+
+  <div class="content">
+    <div class="lockscreen" id="lock">
+      <div class="time">9:41</div>
+      <div class="date">Sunday, October 18 · Preview</div>
+      <div id="notifs"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Send me…</h3><span class="pill gold">FR-8.4</span></div>
+      <div class="stack" id="toggles"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Daily reminder time</h3></div>
+      <div class="chips" id="times"></div>
+    </div>
+
+    <button class="btn btn-dark btn-block" id="test">🔔 Send a test notification</button>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  const N = {
+    quest: { title: "Prospector Café ☕", body: "“Can you help me count today's orders before the lunch rush?”", act: "Start quest", when: "now" },
+    streak: { title: `Your ${state.streak || 1}-day streak is at risk! 🔥`, body: "Don't let this branch go stale — 2 hours left to commit.", act: "Practice", when: "8:00 PM" },
+    leaderboard: { title: "Sam just passed you 👀", body: "You're 15 XP behind #11. One quick quest puts you back ahead.", act: "Rank up", when: "6:12 PM" },
+  };
+  const TOGGLES = [
+    ["streak", "🔥 Streak reminders", "A nudge when your streak is about to break"],
+    ["quest", "☕ New quest requests", "Daily quests, written like customer requests"],
+    ["leaderboard", "🏆 Leaderboard changes", "When someone passes you or you rank up (off by default)"],
+  ];
+  function render() {
+    $("#notifs").innerHTML = ["quest", "streak", "leaderboard"].filter((k) => state.prefs[k]).map((k) =>
+      `<div class="notif"><img src="assets/favicon.png" alt=""><div class="grow"><div class="row"><b>Git Good</b><span class="when">${N[k].when}</span></div><b>${N[k].title}</b><br>${N[k].body}<br><span class="act">${N[k].act}</span></div></div>`
+    ).join("") || `<p class="small" style="opacity:.8;margin-top:10px">All quiet. Turn on a reminder below 👇</p>`;
+  }
+  $("#toggles").innerHTML = TOGGLES.map(([k, t, d]) => `
+    <label class="row between" style="cursor:pointer">
+      <div class="grow"><b style="font-size:14px">${t}</b><div class="small muted">${d}</div></div>
+      <span class="switch"><input type="checkbox" data-k="${k}" ${state.prefs[k] ? "checked" : ""}><span></span></span>
+    </label>`).join("");
+  $("#toggles").addEventListener("change", (e) => {
+    const k = e.target.dataset.k; if (!k) return;
+    state.prefs[k] = e.target.checked; GG.save(); render();
+    GG.toast(e.target.checked ? "🔔 Turned on" : "🔕 Turned off");
+  });
+  const times = ["🌅 9 AM", "☀️ 1 PM", "🌆 6 PM", "🌙 8 PM", "🦉 10 PM"];
+  let pick = 3;
+  const drawTimes = () => ($("#times").innerHTML = times.map((t, i) => `<button class="chip ${i === pick ? "on" : ""}" data-i="${i}">${t}</button>`).join(""));
+  $("#times").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (!b) return; pick = +b.dataset.i; drawTimes(); GG.toast(`⏰ Reminders at ${times[pick].slice(3)}`); });
+  $("#test").addEventListener("click", () => {
+    $("#notifs").insertAdjacentHTML("afterbegin", `<div class="notif"><img src="assets/favicon.png" alt=""><div class="grow"><div class="row"><b>Git Good</b><span class="when">now</span></div><b>Prof. Byte 🤖</b><br>Your weekly Python quests are ready. Quit forking around! 😉<br><span class="act">Open class</span></div></div>`);
+    document.querySelector(".screen").scrollTo({ top: 0, behavior: "smooth" });
+  });
+  drawTimes();
+  render();
+</script>
+</body>
+</html>

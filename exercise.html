@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quest · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar">
+    <div class="row">
+      <a class="back" href="home.html" data-back aria-label="Back">‹</a>
+      <div class="grow">
+        <div class="tiny" style="opacity:.8;font-weight:800" id="kicker"></div>
+        <h1 style="font-size:19px" id="title"></h1>
+      </div>
+      <span class="timer" id="timer" hidden>5:00</span>
+      <span class="stat-pill xp" id="xp-pill"></span>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="speaker rise" id="speaker"></div>
+
+    <div class="rise">
+      <div class="row between" style="margin-bottom:8px">
+        <b style="font-size:15px" id="prompt"></b>
+      </div>
+      <div class="code" id="code"></div>
+    </div>
+
+    <div class="card flat rise">
+      <div class="card-h"><h3>Tests</h3><span class="pill grey" id="score">0/3 passed</span></div>
+      <div class="tests" id="tests"></div>
+    </div>
+
+    <div class="card mint" id="hint" hidden>
+      <div class="speaker"><div class="byte who">🤖</div><div class="small"><b>Hint from Prof. Byte</b><br><span id="hint-text"></span></div></div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-ghost grow" id="hint-btn">💡 Hint</button>
+      <button class="btn btn-primary grow" id="run">▶ Run</button>
+    </div>
+  </div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, $$, state } = GG;
+  const params = new URLSearchParams(location.search);
+  const qid = QUESTS[params.get("q")] ? params.get("q") : "first";
+  // Launched from a classroom: record progress against that class and return to it.
+  const classId = params.get("c"), classQuest = params.get("cq");
+  const Q = Object.assign({}, QUESTS[qid], classId ? { next: `class.html?c=${classId}` } : {});
+  let usedHint = false, done = false, secs = Q.timed || 0, startedAt = Date.now(), timerId = null;
+
+  document.title = `${Q.title} · Git Good`;
+  $("#kicker").textContent = `${Q.skill.toUpperCase()} · ${Q.level.toUpperCase()} · ~${Q.minutes} MIN`;
+  $("#title").textContent = Q.title;
+  $("#xp-pill").textContent = `+${Q.xp} XP`;
+  $("#prompt").textContent = Q.prompt;
+  const isByte = Q.speaker.who === "🤖";
+  $("#speaker").innerHTML = `
+    ${isByte ? `<div class="byte who">🤖</div>` : `<div class="avatar lg who">${Q.speaker.who}</div>`}
+    <div class="bubble ${isByte ? "" : "cream"}"><b class="name">${Q.speaker.name} · ${Q.speaker.role}</b>${Q.story}</div>`;
+
+  // --- tiny syntax highlighter (good enough for a prototype) ---
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const KW = /\b(for|in|while|if|else|print|range|len|def|return|git|add|display|justify-content|align-items)\b/g;
+  function hl(text) {
+    let comment = "";
+    const hash = text.indexOf("#");
+    if (hash >= 0 && !/["']/.test(text.slice(hash))) { comment = text.slice(hash); text = text.slice(0, hash); }
+    const strs = [];
+    // Park strings behind letter-only placeholders so the keyword/number passes can't touch them.
+    let out = esc(text).replace(/"[^"]*"/g, (m) => { strs.push(m); return `\u0000${String.fromCharCode(65 + strs.length - 1)}\u0000`; });
+    out = out.replace(KW, '<span class="kw">$1</span>').replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+    out = out.replace(/\u0000([A-Z])\u0000/g, (_, c) => `<span class="str">${strs[c.charCodeAt(0) - 65]}</span>`);
+    return out + (comment ? `<span class="cm">${esc(comment)}</span>` : "");
+  }
+  $("#code").innerHTML = Q.code.map((line) =>
+    line.split(/(\{\d\})/).map((part) => {
+      const m = part.match(/^\{(\d)\}$/);
+      if (!m) return hl(part);
+      const i = +m[1], w = Math.max(...Q.answers[i].map((a) => a.length)) + 2;
+      return `<input data-i="${i}" style="width:${w}ch" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Blank ${i + 1}">`;
+    }).join("")
+  ).join("\n");
+
+  $("#tests").innerHTML = Q.tests.map((t) => `<div class="test"><i>•</i>${t}</div>`).join("");
+  const inputs = $$("#code input");
+  inputs[0].focus({ preventScroll: true });
+  inputs.forEach((inp, i) => inp.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); inputs[i + 1] ? inputs[i + 1].focus() : run(); }
+  }));
+
+  // --- timer for timed quests ---
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  if (Q.timed) {
+    const t = $("#timer");
+    t.hidden = false;
+    t.textContent = fmt(secs);
+    timerId = setInterval(() => {
+      secs = Math.max(0, secs - 1);
+      t.textContent = fmt(secs);
+      t.classList.toggle("low", secs <= 60);
+      if (secs === 0) { clearInterval(timerId); GG.toast("⏰ Time's up! Keep going — no penalty in practice mode."); }
+    }, 1000);
+  }
+
+  $("#hint-btn").addEventListener("click", () => {
+    usedHint = true;
+    $("#hint-text").textContent = Q.hint;
+    $("#hint").hidden = false;
+    $("#hint").classList.add("pop-in");
+  });
+
+  const norm = (s) => s.trim().replace(/\s+/g, "");
+  const MISS = ["So close! Don't fork it up 😅", "Merge conflict! Try again 🔀", "Almost — check the highlighted blank 👀", "Bug spotted 🐛 Give it another go!"];
+  function run() {
+    if (done) return;
+    const ok = inputs.map((inp) => Q.answers[+inp.dataset.i].some((a) => norm(a) === norm(inp.value)));
+    inputs.forEach((inp, i) => { inp.classList.remove("right", "wrong"); void inp.offsetWidth; inp.classList.add(ok[i] ? "right" : "wrong"); });
+    const allOk = ok.every(Boolean);
+    const results = Q.tests.map((_, i) => (i < ok.length ? ok[i] : allOk));
+    $$("#tests .test").forEach((el, i) => {
+      el.className = "test " + (results[i] ? "pass" : "fail");
+      el.querySelector("i").textContent = results[i] ? "✓" : "✕";
+    });
+    const passed = results.filter(Boolean).length;
+    $("#score").textContent = `${passed}/${Q.tests.length} passed`;
+    $("#score").className = "pill " + (allOk ? "green" : "flame");
+    if (!allOk) {
+      GG.toast(MISS[Math.floor(Math.random() * MISS.length)]);
+      if (!usedHint) $("#hint-btn").classList.add("pulse");
+      return;
+    }
+    done = true;
+    clearInterval(timerId);
+    $("#run").textContent = "✓ All tests passed";
+    $("#run").disabled = true;
+    setTimeout(reward, 450);
+  }
+  $("#run").addEventListener("click", run);
+
+  // --- reward modal: confetti, XP count-up, streak, mystery chest, badge ---
+  const WINS = ["Commit complete! 🎉", "Merged to main! 🚀", "Pushed it! 💪", "Clean build! ✨", "No bugs here! 🐞🚫"];
+  function reward() {
+    const lvlBefore = GG.level().n;
+    const res = GG.completeQuest(qid, classQuest);
+    const lvl = GG.level();
+    const took = Math.round((Date.now() - startedAt) / 1000);
+    const badgeHTML = res.badges.map((id) => {
+      const b = GG.badge(id);
+      return `<div class="card cream" style="margin-top:10px">
+        <div class="tiny" style="font-weight:900;color:#8a7426;letter-spacing:.08em">ACHIEVEMENT UNLOCKED</div>
+        <div class="row" style="justify-content:center;margin:6px 0">${GG.badgeHTML(b)}</div>
+        <b>${b.name}</b><div class="small muted">${b.req}</div>
+        <div class="row" style="margin-top:10px">
+          <a class="btn btn-gold btn-sm grow" href="achievements.html?share=${id}">Share</a>
+          <button class="btn btn-ghost btn-sm grow" data-later>Later</button>
+        </div></div>`;
+    }).join("");
+
+    GG.openModal(`
+      <div style="max-height:min(560px,64vh);overflow-y:auto;padding:2px">
+        <div style="font-size:22px;font-weight:900">${WINS[Math.floor(Math.random() * WINS.length)]}</div>
+        <div class="xp-burst" id="xpb">+0 XP</div>
+        <div class="stack" style="margin:6px 0 12px">
+          <div class="reward-line"><span class="ri flame">🔥</span><span class="grow">${res.streakUp ? `${state.streak}-day streak! ${state.streak === 1 ? "You started a streak." : "Keep it going!"}` : `Streak safe for today (${state.streak} days)`}</span></div>
+          ${Q.timed ? `<div class="reward-line"><span class="ri">⏱️</span><span class="grow">${secs > 0 ? `Beat the clock in ${fmt(took)}!` : `Finished in ${fmt(took)}`}</span></div>` : ""}
+          <div class="reward-line" style="display:block">
+            <div class="row between small"><b>Level ${lvl.n}${lvl.n > lvlBefore ? " 🎉 LEVEL UP!" : ""}</b><span class="muted">${lvl.into}/${lvl.need} XP</span></div>
+            <div class="bar gold" style="margin-top:6px"><span data-w="${lvl.pct}"></span></div>
+          </div>
+        </div>
+        <div id="chest-wrap" class="card flat">
+          <div class="small muted" style="font-weight:800">Tap the mystery chest!</div>
+          <div class="chest" id="chest" role="button" aria-label="Open mystery chest">🎁</div>
+        </div>
+        ${badgeHTML}
+      </div>
+      <a class="btn btn-primary btn-block" style="margin-top:14px" href="${Q.next}" id="continue">Continue</a>`, (m) => {
+      GG.confettiBurst();
+      GG.countUp(m.querySelector("#xpb"), Q.xp, 900, 0, "+");
+      setTimeout(() => (m.querySelector("#xpb").textContent += " XP"), 950);
+      GG.animateBars(m);
+      m.querySelectorAll("[data-later]").forEach((b) => (b.onclick = () => { b.closest(".card").remove(); GG.toast("🏅 Saved to your trophy case"); }));
+      const chest = m.querySelector("#chest");
+      chest.onclick = () => {
+        if (chest.classList.contains("opened")) return;
+        chest.classList.add("opened");
+        // Variable reward: usually bonus XP, sometimes a Streak Freeze.
+        if (Math.random() < 0.35) {
+          state.freezes += 1; GG.save();
+          chest.textContent = "🧊";
+          chest.insertAdjacentHTML("afterend", `<b>Streak Freeze!</b><div class="small muted">Protects your streak if you miss a day.</div>`);
+        } else {
+          const bonus = [10, 15, 20, 25, 30][Math.floor(Math.random() * 5)];
+          GG.addXP(bonus);
+          chest.textContent = "💰";
+          chest.insertAdjacentHTML("afterend", `<b>+${bonus} bonus XP!</b><div class="small muted">Lucky you 🍀</div>`);
+        }
+        GG.confettiBurst({ particleCount: 40, spread: 50 });
+      };
+    });
+  }
+</script>
+</body>
+</html>

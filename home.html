@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home · Git Good</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body data-tab="home">
+<div class="stage"><div class="device"><div class="screen">
+  <header class="appbar tall">
+    <div class="row">
+      <a href="profile.html" id="me-av"></a>
+      <div class="grow">
+        <h1 style="font-size:20px" id="hello"></h1>
+        <p class="sub">Ready to build your future?</p>
+      </div>
+      <div class="stat-pills">
+        <a class="stat-pill flame" href="#streak"><span class="flame">🔥</span><span id="sp-streak"></span></a>
+        <a class="stat-pill xp" href="leaderboard.html">⚡<span id="sp-xp"></span></a>
+      </div>
+    </div>
+    <div class="row small" style="margin-top:14px;font-weight:800">
+      <span id="lvl-label"></span><span class="grow"></span><span style="opacity:.85" id="lvl-xp"></span>
+    </div>
+    <div class="bar gold on-dark" style="margin-top:6px"><span id="lvl-bar"></span></div>
+  </header>
+
+  <div class="content" id="content"></div>
+</div></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const { $, state } = GG;
+  const lvl = GG.level();
+  const h = new Date().getHours();
+  const greet = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  $("#hello").textContent = `${greet}, ${GG.firstName()} 👋`;
+  $("#me-av").innerHTML = GG.avatarHTML(state.avatar, "lg");
+  $("#sp-streak").textContent = state.streak;
+  $("#sp-xp").textContent = state.xp.toLocaleString();
+  $("#lvl-label").textContent = `Level ${lvl.n}`;
+  $("#lvl-xp").textContent = `${lvl.into}/${lvl.need} XP to Level ${lvl.n + 1}`;
+  $("#lvl-bar").dataset.w = lvl.pct;
+
+  const done = GG.doneDaily();
+  const anyToday = state.doneToday.length > 0;
+  const nextQ = DAILY.find((q) => !state.doneToday.includes(q)) || DAILY[0];
+  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const cls = CLASSES.find((c) => c.id === state.joinedClass);
+  const lbRows = GG.ranked(LB_APP, state.xp);
+  const me = lbRows.find((r) => r.me);
+  const above = lbRows[me.rank - 2];
+  let skipped = false;
+  try { skipped = sessionStorage.getItem("gg-skipped") === "1"; sessionStorage.removeItem("gg-skipped"); } catch (e) { /* ignore */ }
+
+  const parts = [];
+
+  if (state.fresh) {
+    parts.push(`<div class="card mint rise">
+      <div class="row"><span style="font-size:30px">🎉</span><div class="grow"><b>Welcome to Git Good${state.username ? ", " + state.username : ""}!</b>
+      <div class="small muted">${skipped ? "No worries — your first quest is waiting below whenever you're ready." : "You're officially on the board. Come back tomorrow to grow your streak."}</div></div></div>
+      <button class="btn btn-ghost btn-sm btn-block" style="margin-top:10px" id="ff">⏩ Demo: skip ahead one week</button>
+    </div>`);
+  }
+
+  if (!anyToday && state.streak > 0) {
+    parts.push(`<a class="banner rise" href="exercise.html?q=${nextQ}">
+      <span class="bi flame">🔥</span><span class="grow">Your ${state.streak}-day streak is at risk!<br><span class="small" style="font-weight:700">Don't let this branch go stale — one quick quest saves it.</span></span><span>›</span></a>`);
+  } else if (anyToday) {
+    parts.push(`<div class="banner good rise"><span class="bi">✅</span><span class="grow">Streak secured for today!<br><span class="small" style="font-weight:700">${done < 3 ? `${3 - done} more daily quest${3 - done > 1 ? "s" : ""} for the bonus chest 🎁` : "All daily quests done — legend. 🏆"}</span></span></div>`);
+  }
+
+  parts.push(`<div class="card rise" id="streak">
+    <div class="card-h"><h3><span class="flame">🔥</span> ${state.streak}-day streak</h3><span class="pill sky">🧊 ${state.freezes} freeze${state.freezes === 1 ? "" : "s"}</span></div>
+    <div class="week">${days.map((d, i) => {
+      const c = state.week[i] ? "hit" : i === 6 ? "today" : "";
+      return `<div class="d ${c}"><i>${state.week[i] ? "✓" : i === 6 ? "!" : ""}</i>${d}</div>`;
+    }).join("")}</div>
+    <p class="small muted" style="margin-top:10px">${state.streak >= 7 ? "Longest streak ever — keep going for 30! 🌋" : `${Math.max(0, 7 - state.streak)} more day${7 - state.streak === 1 ? "" : "s"} to unlock the <b>7-Day Streak</b> badge ⚡`}</p>
+  </div>`);
+
+  parts.push(`<div class="card rise">
+    <div class="row" style="margin-bottom:12px">
+      <div class="ring" data-p="${Math.round(done / 3 * 100)}" style="--size:62px"><div>${done}/3<small>daily</small></div></div>
+      <div class="grow"><h3 style="font-size:16px">Today's quests</h3><p class="small muted">Finish all 3 for a bonus chest 🎁 · resets at midnight</p></div>
+    </div>
+    <div class="stack">${DAILY.map((id) => {
+      const q = QUESTS[id], isDone = state.doneToday.includes(id), cur = id === nextQ && !isDone;
+      return `<div class="quest ${isDone ? "done" : cur ? "current" : ""}">
+        <div class="qi">${isDone ? "✓" : q.icon}</div>
+        <div class="grow"><h4>${q.title}</h4><div class="meta">${q.skill} · ~${q.minutes} min · +${q.xp} XP</div></div>
+        ${isDone ? `<span class="pill green">Done</span>` : `<a class="btn ${cur ? "btn-primary pulse" : "btn-ghost"} btn-sm" href="exercise.html?q=${id}">Start</a>`}
+      </div>`;
+    }).join("")}</div>
+  </div>`);
+
+  if (state.fresh && !state.earned.includes("hello-world")) {
+    parts.push(`<a class="card cream rise row" href="quiz-intro.html"><span style="font-size:30px">☕</span><div class="grow"><b>First quest: Count the café orders</b><div class="small muted">Easy · 5 min · unlocks your first badge</div></div><span class="btn btn-gold btn-sm">Go</span></a>`);
+  }
+
+  parts.push(`<div class="card rise">
+    <div class="card-h"><h3>Learning path · Python</h3><a href="profile.html#path">9/15 ›</a></div>
+    <div class="path">
+      ${[["Variables", "✓", "done"], ["Lists", "✓", "done"], ["Loops", "🔁", "cur"], ["Functions", "🔒", ""], ["Dicts", "🔒", ""], ["Files", "🔒", ""]].map(([n, ic, c], i, a) =>
+        `<div class="node ${c}"><i>${ic}</i>${n}</div>${i < a.length - 1 ? `<span class="link-line ${c === "done" ? "done" : ""}"></span>` : ""}`).join("")}
+    </div>
+    <p class="small muted" style="margin-top:6px">Lessons unlock in order — finish Loops to open Functions.</p>
+  </div>`);
+
+  parts.push(cls ? `<a class="card rise" href="class.html?c=${cls.id}" style="display:block">
+      <div class="speaker"><div class="byte who">🤖</div><div class="grow">
+        <div class="row between"><b>${cls.name}</b><span class="pill gold">18d left</span></div>
+        <div class="small muted" style="margin:2px 0 8px">Prof. Byte: “This week is all about ${cls.topic.toLowerCase()}!”</div>
+        <div class="bar"><span data-w="${Math.round(state.classDone.length / 3 * 100)}"></span></div>
+        <div class="tiny muted" style="margin-top:4px">${state.classDone.length} of 3 weekly quests done</div>
+      </div></div></a>`
+    : `<a class="card rise row" href="classes.html"><div class="byte">🤖</div><div class="grow"><b>Join a seasonal classroom</b><div class="small muted">Prof. Byte recommends one from your skills</div></div><span>›</span></a>`);
+
+  parts.push(`<a class="card rise row" href="leaderboard.html">
+    <span style="font-size:30px">🏆</span>
+    <div class="grow"><b>You're #${me.rank} this week</b><div class="small muted">${above ? `${above.xp - state.xp} XP to pass ${above.name.split(" ")[0]}` : "You're on top!"}</div></div>
+    <span class="btn btn-ghost btn-sm">Ranks</span></a>`);
+
+  parts.push(`<div class="card rise"><div class="card-h"><h3>Happening at UNCC</h3><span class="pill green">● live</span></div>
+    <div class="feed">${FEED.map(([av, n, t]) => `<div class="item">${GG.avatarHTML(av, "sm")}<span><b>${n}</b> ${t}</span></div>`).join("")}</div></div>`);
+
+  $("#content").innerHTML = parts.join("");
+  const ff = $("#ff");
+  if (ff) ff.onclick = () => { GG.fastForward(); location.reload(); };
+</script>
+</body>
+</html>
