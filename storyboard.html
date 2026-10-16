@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   .feat { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
@@ -56,7 +56,7 @@
     </aside></div>
 
     <h2 class="sec">Storyboard → prototype</h2>
-    <p class="muted" style="margin-bottom:16px">Click any sketch to enlarge it.</p>
+    <p class="muted" style="margin-bottom:16px">Each step pairs a team sketch with the screen it became. Click any sketch to enlarge it.</p>
     <div id="steps"></div>
 
     <h2 class="sec">Final feature list</h2>
@@ -82,35 +82,35 @@
     </table></div>
 
     <h2 class="sec">Team sketches</h2>
-    <p class="muted" style="margin-bottom:14px">Design Sprint Day 2 Crazy 8's and solution sketches — each member designed the screens for their own features.</p>
+    <p class="muted" style="margin-bottom:14px">More Crazy 8's, solution sketches and journey maps — each member designed the screens for their own features.</p>
     <div class="sb-gallery" id="gallery"></div>
   </main>
 
   <div class="lightbox" id="lb"><img alt=""></div>
 
-<script src="js/data.js?v=5"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/data.js?v=6"></script>
+<script src="js/app.js?v=6"></script>
 <script>
   const STEPS = [
-    { by: "Whole team (onboarding)", img: "sb1-problem-signup", title: "The problem → Sign up", text: "Maya needs job skills but has no free time. She signs up with her college email and picks a username and avatar.", links: [["Sign up", "signup.html"]] },
-    { by: "AJ B. · Idol H.", img: "sb2-skills-quiz", title: "Choose skills → First quiz", text: "Her skill picks shape her pathway. The first quiz is a quick, skippable “customer story.”", links: [["Pick skills", "skills.html"], ["First quest", "quiz-intro.html"]] },
-    { by: "Idol H. · Athena D.", img: "sb3-exercise-reward", title: "First exercise → Reward", text: "She fills in the blanks of starter code with a hint button, then gets a badge, starts a streak and can share it.", links: [["Exercise", "exercise.html?q=first"]] },
-    { by: "Idol H. · Athena D.", img: "sb4-notify-quests", title: "Notified → Quests & pathway", text: "The next day a reminder reads like a customer request. New quests arrive daily and the pathway unlocks in order.", links: [["Notifications", "notifications.html"], ["Home", "home.html"]] },
-    { by: "Heidi W.", img: "sb5-leaderboard-class", title: "Leaderboard → Classroom", text: "She sees her rank, the XP to rank up and a suggested quest. She joins a seasonal classroom where Prof. Byte posts weekly topics.", links: [["Leaderboard", "leaderboard.html"], ["Class home", "class.html?c=python"]] },
-    { by: "Heidi W. · AJ B.", img: "sb6-payoff", title: "Payoff", text: "A 30-day streak and a trophy case of badges she links on her resume and LinkedIn — real proof of effort and skills.", links: [["Achievements", "achievements.html"], ["Verify page", "verify.html"]] },
+    { by: "Whole team (onboarding)", sketch: "Athena D. · pathway wireframes", img: "athena-wireframes", fit: "contain", title: "The problem → Sign up", text: "Maya needs job skills but has no free time. She signs up with her college email and picks a username and avatar.", links: [["Sign up", "signup.html"]] },
+    { by: "AJ B. · Idol H.", sketch: "Idol H. · skill quiz intro", img: "idol-quiz", title: "Choose skills → First quiz", text: "Her skill picks shape her pathway. The first quiz is a quick, skippable “customer story.”", links: [["Pick skills", "skills.html"], ["First quest", "quiz-intro.html"]] },
+    { by: "Idol H. · Athena D.", sketch: "Idol H. · example quiz exercise", img: "idol-exercise", title: "First exercise → Reward", text: "She fills in the blanks of starter code with a hint button, then gets a badge, starts a streak and can share it.", links: [["Exercise", "exercise.html?q=first"]] },
+    { by: "Idol H. · Athena D.", sketch: "Athena D. · quest page", img: "athena-quests", title: "Notified → Quests & pathway", text: "The next day a reminder reads like a customer request. New quests arrive daily and the pathway unlocks in order.", links: [["Notifications", "notifications.html"], ["Home", "home.html"]] },
+    { by: "Heidi W.", sketch: "Heidi W. · leaderboard", img: "heidi-leaderboard-sketch", title: "Leaderboard → Classroom", text: "She sees her rank, the XP to rank up and a suggested quest. She joins a seasonal classroom where Prof. Byte posts weekly topics.", links: [["Leaderboard", "leaderboard.html"], ["Class home", "class.html?c=python"]] },
+    { by: "Heidi W. · AJ B.", sketch: "AJ B. · streaks + profile", img: "aj-streak-profile", title: "Payoff", text: "A 30-day streak and a trophy case of badges she links on her resume and LinkedIn — real proof of effort and skills.", links: [["Achievements", "achievements.html"], ["Verify page", "verify.html"]] },
   ];
   document.getElementById("steps").innerHTML = STEPS.map((s, i) => `
     <div class="sb-step">
-      <img src="assets/sketches/${s.img}.jpg" alt="Storyboard panel: ${s.title}" loading="lazy">
+      <figure style="margin:0"><img src="assets/sketches/${s.img}.jpg" alt="Sketch for ${s.title} by ${s.sketch}" loading="lazy" style="${s.fit ? "object-fit:contain;background:#fff" : ""}"><figcaption class="tiny muted" style="margin-top:6px;font-weight:800">✏️ Sketch: ${s.sketch}</figcaption></figure>
       <div><h3><span class="num">${i + 1}</span>${s.title}</h3><div class="by">Feature design: ${s.by}</div><p>${s.text}</p>
       <div class="row" style="flex-wrap:wrap">${s.links.map(([t, h]) => `<a class="btn btn-primary btn-sm" href="${h}">Open ${t} →</a>`).join("")}</div></div>
     </div>`).join("");
 
   const GALLERY = [
-    ["aj-streak-profile", "Streaks + profile", "AJ B."], ["aj-streaks-crazy8", "Streaks Crazy 8's", "AJ B."], ["aj-profile-crazy8", "Profile Crazy 8's", "AJ B."],
-    ["athena-quests", "Quest page", "Athena D."], ["athena-pathway", "Pathway", "Athena D."], ["athena-pathway-crazy8", "Pathway Crazy 8's", "Athena D."],
+    ["aj-streaks-crazy8", "Streaks Crazy 8's", "AJ B."], ["aj-profile-crazy8", "Profile Crazy 8's", "AJ B."], ["aj-journey", "User journey map", "AJ B."],
+    ["athena-quests-crazy8", "Quests Crazy 8's", "Athena D."], ["athena-pathway-crazy8", "Pathway Crazy 8's", "Athena D."], ["athena-pathway", "Pathway", "Athena D."],
     ["heidi-crazy8", "Leaderboard / classroom Crazy 8's", "Heidi W."], ["heidi-achievements", "Achievements sketch", "Heidi W."], ["heidi-classroom", "AI classroom sketch", "Heidi W."],
-    ["idol-quiz", "Skill quiz intro", "Idol H."], ["idol-exercise", "Example quiz exercise", "Idol H."], ["idol-notify", "Streak notifications", "Idol H."],
+    ["idol-notify", "Streak notifications", "Idol H."], ["idol-reward", "Completed assignment", "Idol H."], ["idol-journey", "User journey map", "Idol H."],
   ];
   document.getElementById("gallery").innerHTML = GALLERY.map(([f, t, by]) =>
     `<figure><img src="assets/sketches/${f}.jpg" alt="${t} sketch by ${by}" loading="lazy"><figcaption>${t}<small>${by}</small></figcaption></figure>`).join("");
