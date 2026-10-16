@@ -257,7 +257,7 @@ const GG = (() => {
     const left = document.createElement("aside");
     left.className = "demo-panel left";
     left.innerHTML = `
-      <div class="brand"><img src="assets/logo.png" alt=""><div><b>Git Good</b><small>Clickable prototype · ITSC 3155 Group 7</small></div></div>
+      <div class="brand"><img src="assets/mark.svg" alt=""><div><b>Git Good</b><small>Clickable prototype · ITSC 3155 Group 7</small></div></div>
       ${demoListHTML()}
       <div class="tools">
         <button data-ff>⏩ Fast-forward one week</button>

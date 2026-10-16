@@ -121,7 +121,7 @@ p { margin: 0; }
   scrollbar-width: thin;
 }
 .demo-panel .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
-.demo-panel .brand img { width: 46px; height: 46px; border-radius: 50%; background: #fff; padding: 3px; }
+.demo-panel .brand img { width: 46px; height: 46px; border-radius: 50%; background: #fff; padding: 6px; }
 .demo-panel .brand b { font-size: 18px; display: block; }
 .demo-panel .brand small { opacity: .75; font-size: 12px; }
 .demo-panel h4 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-bright); margin: 16px 0 6px; }
@@ -603,13 +603,13 @@ button.badge:active, .badge-btn:active .badge { transform: scale(.94); }
     linear-gradient(170deg, var(--green) 0%, #00653f 60%, #008a4b 100%);
   color: #fff;
 }
-.landing .logo {
-  width: 168px; height: 168px; border-radius: 50%; background: #fff; padding: 10px;
-  box-shadow: 0 0 0 6px rgba(245, 197, 66, .55), 0 18px 40px rgba(0, 0, 0, .3);
+.landing .logo-card {
+  background: #fff; border-radius: 24px; padding: 18px 20px; margin-top: 18px;
+  box-shadow: 0 0 0 5px rgba(245, 197, 66, .55), 0 18px 40px rgba(0, 0, 0, .3);
   animation: float 5s ease-in-out infinite;
 }
-.landing h1 { font-size: 40px; font-weight: 900; letter-spacing: -.02em; margin-top: 18px; }
-.landing .tagline { font-size: 18px; font-weight: 800; color: var(--gold-bright); margin-top: 4px; }
+.landing .logo { display: block; width: 100%; max-width: 280px; height: auto; }
+.landing .tagline { font-size: 18px; font-weight: 800; color: var(--gold-bright); margin-top: 18px; }
 .landing .props { display: grid; gap: 10px; width: 100%; margin: 22px 0; text-align: left; }
 .landing .prop { display: flex; gap: 12px; align-items: center; background: rgba(255, 255, 255, .1); border-radius: 16px; padding: 12px 14px; font-weight: 800; font-size: 14px; }
 .landing .prop span { font-size: 24px; }
@@ -659,7 +659,7 @@ body.web { background: var(--bg); }
 }
 .web-top .in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .web-top .lg { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 18px; }
-.web-top .lg img { width: 40px; height: 40px; border-radius: 50%; background: #fff; padding: 2px; }
+.web-top .lg img { width: 40px; height: 40px; border-radius: 50%; background: #fff; padding: 5px; }
 .employer-strip { background: var(--gold-tint); border-bottom: 1.5px solid #EFE3BF; color: #6b5a1c; font-size: 14px; padding: 10px 20px; }
 .employer-strip .in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .web-wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 60px; }

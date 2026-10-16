@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.svg" width="520" alt="Git Good — Quit Forking Around."></p>
+
 # Git Good — *Quit Forking Around.*
 
 **ITSC 3155 Software Engineering · UNC Charlotte · Fall 2026 · Group 7**
