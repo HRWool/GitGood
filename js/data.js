@@ -83,7 +83,7 @@ const BADGES = [
   { id: "season-top3", name: "Season 1 · Top 3", icon: "🏆", type: "Seasons", slug: "s1t3", req: "Finish a classroom season in the top 3." },
   { id: "bug-squasher", name: "Bug Squasher", icon: "🐛", type: "Skills", slug: "bg10", req: "Pass 10 quests without using a hint.", goal: 10, have: 3 },
   { id: "early-bird", name: "Early Bird", icon: "🌅", type: "Streaks", slug: "e4rl", req: "Finish a quest before 8 AM.", goal: 1, have: 0 },
-  { id: "helper", name: "Pair Programmer", icon: "🤝", type: "Seasons", slug: "p41r", req: "Add 3 friends to your leaderboard.", goal: 3, have: 2 },
+  { id: "helper", name: "Study Buddy", icon: "🤝", type: "Seasons", slug: "p41r", req: "Add 3 friends to your leaderboard.", goal: 3, have: 2 },
 ];
 
 /* Exercises. Code lines use {0}, {1}… for blanks; `answers` lists accepted values per blank. */
@@ -320,6 +320,6 @@ const PAGES = [
   { file: "season.html", title: "Season results", group: "Classrooms", tip: "Seasons reset every 4 weeks. Top 3 earn a shareable badge.", ask: ["Is a 4-week season the right length?"] },
   { file: "leaderboard.html", title: "Leaderboard", group: "Leaderboard", tip: "Centered on YOU and your neighbors, with the exact XP gap and a quest to close it.", ask: ["Motivating or stressful?", "Would you use Friends or Class more?"] },
   { file: "achievements.html", title: "Achievements", group: "Achievements", tip: "Trophy case. Tap any badge. Share one to get a verify link + QR.", ask: ["Would you put one of these on LinkedIn?"] },
-  { file: "verify.html?a=7f3k", title: "Public verify page", group: "Achievements", tip: "What an employer sees when they open your badge link. No login needed.", ask: ["Does this look trustworthy?"] },
+  { file: "verify.html", title: "Public verify page", group: "Achievements", tip: "Employer view: the public page behind a shared badge link or QR code. No login needed. Shows your newest badge.", ask: ["Does this look trustworthy?"] },
   { file: "storyboard.html", title: "📖 Storyboard & sketches", group: "Behind the design", tip: "Storyboard and sketches that led to each screen.", ask: [] },
 ];

@@ -224,6 +224,8 @@ p { margin: 0; }
 .card.cream { background: var(--cream); box-shadow: none; border: 1.5px solid #EFE6CC; }
 .card-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .card-h h3 { font-size: 16px; font-weight: 900; }
+.card-h { gap: 8px; }
+.card-h .pill { flex: none; }
 .card-h a, .link { color: var(--green-vivid); font-weight: 800; font-size: 13px; }
 .muted { color: var(--ink-2); }
 .small { font-size: 12px; }
@@ -301,7 +303,7 @@ p { margin: 0; }
 .avatar.sm { --s: 30px; }
 
 /* progress */
-.bar { height: 10px; background: #E9EEE8; border-radius: 99px; overflow: hidden; }
+.bar { width: 100%; height: 10px; background: #E9EEE8; border-radius: 99px; overflow: hidden; }
 .bar > span {
   display: block; height: 100%; width: 0;
   background: linear-gradient(90deg, var(--green-vivid), var(--green-pop));
@@ -349,8 +351,9 @@ p { margin: 0; }
 .badge.xl { --s: 128px; border-width: 5px; }
 .badge.sm { --s: 40px; border-width: 2px; }
 button.badge:active, .badge-btn:active .badge { transform: scale(.94); }
-.badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 8px; justify-items: center; }
-.badge-btn { display: grid; justify-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--ink-2); text-align: center; line-height: 1.1; }
+.badge-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 6px; justify-items: center; }
+.badge-grid .badge { --s: 54px; }
+.badge-btn { display: grid; justify-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--ink-2); text-align: center; line-height: 1.1; min-width: 0; max-width: 100%; overflow-wrap: break-word; }
 
 /* speech bubble (Prof. Byte / customers) */
 .speaker { display: flex; gap: 10px; align-items: flex-start; }
@@ -657,6 +660,8 @@ body.web { background: var(--bg); }
 .web-top .in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .web-top .lg { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 18px; }
 .web-top .lg img { width: 40px; height: 40px; border-radius: 50%; background: #fff; padding: 2px; }
+.employer-strip { background: var(--gold-tint); border-bottom: 1.5px solid #EFE3BF; color: #6b5a1c; font-size: 14px; padding: 10px 20px; }
+.employer-strip .in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .web-wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 60px; }
 .verify-card {
   max-width: 560px; margin: 0 auto; background: #fff; border-radius: 26px; box-shadow: var(--shadow);

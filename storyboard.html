@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=5">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   .feat { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
@@ -88,8 +88,8 @@
 
   <div class="lightbox" id="lb"><img alt=""></div>
 
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
+<script src="js/data.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 <script>
   const STEPS = [
     { by: "Whole team (onboarding)", img: "sb1-problem-signup", title: "The problem → Sign up", text: "Maya needs job skills but has no free time. She signs up with her college email and picks a username and avatar.", links: [["Sign up", "signup.html"]] },
@@ -97,7 +97,7 @@
     { by: "Idol H. · Athena D.", img: "sb3-exercise-reward", title: "First exercise → Reward", text: "She fills in the blanks of starter code with a hint button, then gets a badge, starts a streak and can share it.", links: [["Exercise", "exercise.html?q=first"]] },
     { by: "Idol H. · Athena D.", img: "sb4-notify-quests", title: "Notified → Quests & pathway", text: "The next day a reminder reads like a customer request. New quests arrive daily and the pathway unlocks in order.", links: [["Notifications", "notifications.html"], ["Home", "home.html"]] },
     { by: "Heidi W.", img: "sb5-leaderboard-class", title: "Leaderboard → Classroom", text: "She sees her rank, the XP to rank up and a suggested quest. She joins a seasonal classroom where Prof. Byte posts weekly topics.", links: [["Leaderboard", "leaderboard.html"], ["Class home", "class.html?c=python"]] },
-    { by: "Heidi W. · AJ B.", img: "sb6-payoff", title: "Payoff", text: "A 30-day streak and a trophy case of badges she links on her resume and LinkedIn — real proof of effort and skills.", links: [["Achievements", "achievements.html"], ["Verify page", "verify.html?a=7f3k"]] },
+    { by: "Heidi W. · AJ B.", img: "sb6-payoff", title: "Payoff", text: "A 30-day streak and a trophy case of badges she links on her resume and LinkedIn — real proof of effort and skills.", links: [["Achievements", "achievements.html"], ["Verify page", "verify.html"]] },
   ];
   document.getElementById("steps").innerHTML = STEPS.map((s, i) => `
     <div class="sb-step">

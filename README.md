@@ -30,7 +30,7 @@ This is a **clickable prototype** for collecting feedback. Every link works, and
 | 11 | [Season results](https://hrwool.github.io/GitGood/season.html) | Top-3 badge → share / pick Season 2 |
 | 12 | [Leaderboard](https://hrwool.github.io/GitGood/leaderboard.html) | "40 XP to pass Sam" → Start the suggested quest → "You moved to #11" |
 | 13 | [Achievements](https://hrwool.github.io/GitGood/achievements.html) | Tap badges, Share → copy link / QR |
-| 14 | [Verify page](https://hrwool.github.io/GitGood/verify.html?a=7f3k) | What an employer sees |
+| 14 | [Verify page](https://hrwool.github.io/GitGood/verify.html) | What an employer sees |
 | 15 | [Design story](https://hrwool.github.io/GitGood/storyboard.html) | Storyboard + sketches behind each screen |
 
 ## Team

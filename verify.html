@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body class="web">
   <header class="web-top">
@@ -17,35 +17,48 @@
       <span class="small" style="opacity:.85;font-weight:800">Achievement verification</span>
     </div>
   </header>
+  <div class="employer-strip">
+    <div class="in">
+      <span>👀 <b>Employer view.</b> This public page opens when a student shares a badge link or QR code — no login needed.</span>
+      <a class="btn btn-dark btn-sm" href="achievements.html">← Back to the app</a>
+    </div>
+  </div>
 
   <main class="web-wrap">
     <div class="verify-card" id="card"></div>
     <p class="tiny muted center" style="margin-top:18px">Prototype page for ITSC 3155 (Group 7). Student data shown here is simulated.</p>
-    <p class="center" style="margin-top:10px"><a class="link" href="home.html">← Back to the app</a></p>
+    <p class="center" style="margin-top:10px"><a class="link" href="achievements.html">← Back to the app</a></p>
   </main>
 
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
+<script src="js/data.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 <script>
   const { $, state } = GG;
-  const slug = new URLSearchParams(location.search).get("a") || "7f3k";
-  const b = BADGES.find((x) => x.slug === slug);
-  const name = state.name || state.username || "Maya Chen";
+  // Whose badge are we showing? The viewer's own if they've earned it; otherwise the
+  // sample student, so a demo link never dead-ends on a brand-new account.
+  const slug = new URLSearchParams(location.search).get("a");
+  const sample = { ...DEFAULT_STATE, isSample: true };
+  const own = { ...state, name: state.name || state.username };
+  let b = slug ? BADGES.find((x) => x.slug === slug) : GG.badge(state.justUnlocked || state.earned[state.earned.length - 1]);
+  let who = own;
+  if (!b && !slug) b = GG.badge(sample.justUnlocked);
+  if (b && !own.earned.includes(b.id)) who = sample;
+  const name = who.name;
 
-  if (!b || !GG.earned(b.id)) {
-    $("#card").innerHTML = `<div style="font-size:48px">🔍</div><h2 style="margin:10px 0 6px">${b ? "Not earned yet" : "Achievement not found"}</h2>
-      <p class="muted">${b ? `${name} hasn't unlocked <b>${b.name}</b> yet. Check back soon!` : "This link doesn't match any Git Good achievement."}</p>`;
+  if (!b || !who.earned.includes(b.id)) {
+    $("#card").innerHTML = `<div style="font-size:48px">🔍</div><h2 style="margin:10px 0 6px">Achievement not found</h2>
+      <p class="muted">This link doesn't match a verified Git Good achievement.</p>`;
   } else {
-    const others = state.earned.filter((id) => id !== b.id).map(GG.badge);
-    const date = state.earnedOn[b.id] || GG.today();
+    const others = who.earned.filter((id) => id !== b.id).map(GG.badge);
+    const date = who.earnedOn[b.id] || GG.today();
     document.title = `${b.name} · ${name} · Git Good`;
     $("#card").innerHTML = `
       <div class="row" style="justify-content:center;gap:12px;margin-top:6px">
-        ${GG.avatarHTML(state.avatar, "lg")}
-        <div style="text-align:left"><b style="font-size:20px">${name}</b><div class="small muted">@${state.username} · UNC Charlotte · Computer Science</div></div>
+        ${GG.avatarHTML(who.avatar, "lg")}
+        <div style="text-align:left"><b style="font-size:20px">${name}</b><div class="small muted">@${who.username} · UNC Charlotte · Computer Science</div></div>
       </div>
-      <div class="verified">✔ Verified by Git Good</div>
-      <div class="row" style="justify-content:center">${GG.badgeHTML(b, "xl")}</div>
+      <div class="verified">✔ Verified by Git Good</div>${who.isSample ? `<div class="tiny muted" style="margin:-10px 0 14px">Showing a sample student, since you have not earned this badge yet.</div>` : ""}
+      <div class="row" style="justify-content:center"><span class="badge xl earned">${b.icon}</span></div>
       <h1 style="font-size:28px;margin:14px 0 4px">${b.name}</h1>
       <p class="muted">${b.req}</p>
       <div class="row" style="justify-content:center;gap:18px;margin:16px 0 4px;flex-wrap:wrap">
@@ -56,7 +69,7 @@
       <hr style="border:0;border-top:1.5px solid var(--line);margin:20px 0 14px">
       <div class="small muted" style="font-weight:900;margin-bottom:10px">OTHER ACHIEVEMENTS (${others.length})</div>
       <div class="row" style="justify-content:center;flex-wrap:wrap;gap:12px">
-        ${others.map((o) => `<a class="badge-btn" style="width:70px" href="verify.html?a=${o.slug}">${GG.badgeHTML(o, "sm")}${o.name}</a>`).join("")}
+        ${others.map((o) => `<a class="badge-btn" style="width:70px" href="verify.html?a=${o.slug}"><span class="badge sm earned">${o.icon}</span>${o.name}</a>`).join("")}
       </div>
       <a class="btn btn-primary" style="margin-top:22px" href="index.html">Are you a Niner? Join Git Good</a>`;
   }
