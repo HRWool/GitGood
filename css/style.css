@@ -443,7 +443,8 @@ button.badge:active, .badge-btn:active .badge { transform: scale(.94); }
 .week .d.today i { border: 3px dashed var(--flame); background: #FFF3EA; animation: pulse 1.6s infinite; }
 .week .d.freeze i { background: #DDF0FF; color: var(--sky); }
 
-.flame { display: inline-block; animation: flicker 1.4s ease-in-out infinite; transform-origin: 50% 90%; }
+.flame:not(.bar):not(.pill):not(.stat-pill) { display: inline-block; animation: flicker 1.4s ease-in-out infinite; transform-origin: 50% 90%; }
+#almost .bar.flame { animation: wobble .9s ease-in-out .9s 2; }
 
 .banner {
   display: flex; gap: 10px; align-items: center;
@@ -587,6 +588,8 @@ button.badge:active, .badge-btn:active .badge { transform: scale(.94); }
 @keyframes wiggle { 0%, 70%, 100% { transform: rotate(0); } 75% { transform: rotate(-10deg); } 85% { transform: rotate(10deg); } 95% { transform: rotate(-4deg); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @keyframes rankUp { 0% { transform: translateY(46px); background: #fff; } 60% { transform: translateY(-4px); } 100% { transform: none; } }
+@keyframes wobble { 0%, 100% { transform: none; } 25% { transform: rotate(-1.5deg) scale(1.02); } 75% { transform: rotate(1.5deg) scale(1.02); } }
+@keyframes wobble-lg { 0%, 100% { transform: none; } 25% { transform: translateY(-8px) rotate(-3deg); } 75% { transform: translateY(-4px) rotate(3deg); } }
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
 
 @media (prefers-reduced-motion: reduce) {
@@ -606,7 +609,7 @@ button.badge:active, .badge-btn:active .badge { transform: scale(.94); }
 .landing .logo-card {
   background: #fff; border-radius: 24px; padding: 18px 20px; margin-top: 18px;
   box-shadow: 0 0 0 5px rgba(245, 197, 66, .55), 0 18px 40px rgba(0, 0, 0, .3);
-  animation: float 5s ease-in-out infinite;
+  animation: wobble-lg 1.6s ease-in-out .3s 1;
 }
 .landing .logo { display: block; width: 100%; max-width: 280px; height: auto; }
 .landing .tagline { font-size: 18px; font-weight: 800; color: var(--gold-bright); margin-top: 18px; }
