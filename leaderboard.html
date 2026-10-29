@@ -51,7 +51,7 @@
     const sel = $("#cls");
     if (sel) sel.onchange = () => { classId = sel.value; render(); };
 
-    const list = tab === "class" ? LB_CLASS : tab === "friends" ? LB_FRIENDS : LB_APP;
+    const list = tab === "class" ? LB_CLASS : tab === "friends" ? GG.friendBoardList() : LB_APP;
     const myXp = tab === "class" ? state.classXp : state.xp;
     const rows = GG.ranked(list, myXp);
     const me = rows.find((r) => r.me);
@@ -104,7 +104,42 @@
     $("#content").innerHTML = parts.join("");
     GG.animateBars($("#content"));
     const af = $("#add-friend");
-    if (af) af.onclick = () => GG.toast("👯 Friend invites are coming soon!");
+    if (af) {
+      af.onclick = () => {
+        GG.openSheet(`
+          <h3 style="margin:0 0 10px">Invite a friend</h3>
+          <div class="stack" style="gap:10px">
+            <label class="tiny muted" for="friend-username">Username or handle</label>
+            <input id="friend-username" class="input" placeholder="@lena_codes" autocomplete="off" />
+            <div class="tiny muted">Prototype invites are saved in your browser and appear on your Friends board.</div>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn btn-primary grow" data-send-friend>Send invite</button>
+            <button class="btn btn-ghost grow" data-close>Cancel</button>
+          </div>
+        `, (s) => {
+          const input = s.querySelector("#friend-username");
+          const send = s.querySelector("[data-send-friend]");
+          const fireInvite = () => {
+            const result = GG.inviteFriend(input.value);
+            if (!result.ok) {
+              GG.toast(result.msg);
+              return;
+            }
+            GG.closeSheet();
+            GG.toast(`📨 Invite sent to @${result.handle}!`);
+            render();
+          };
+          if (input) {
+            input.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") fireInvite();
+            });
+            requestAnimationFrame(() => input.focus());
+          }
+          if (send) send.onclick = fireInvite;
+        });
+      };
+    }
   }
 
   $("#seg").addEventListener("click", (e) => {

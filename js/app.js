@@ -13,12 +13,18 @@ const GG = (() => {
     return clone(DEFAULT_STATE);
   }
   const state = load();
+  if (!state.friends || typeof state.friends !== "object") state.friends = { invites: [], accepted: [], pending: [] };
+  if (!Array.isArray(state.friends.invites)) state.friends.invites = [];
+  if (!Array.isArray(state.friends.accepted)) state.friends.accepted = [];
+  if (!Array.isArray(state.friends.pending)) state.friends.pending = [];
+
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
   }
   function startFresh(profile) {
     Object.keys(state).forEach((k) => delete state[k]);
     Object.assign(state, clone(FRESH_STATE), profile);
+    state.friends = { invites: [], accepted: [], pending: [] };
     save();
   }
   function restart() {
@@ -31,7 +37,45 @@ const GG = (() => {
     Object.keys(state).forEach((k) => delete state[k]);
     Object.assign(state, clone(DEFAULT_STATE));
     Object.entries(keep).forEach(([k, v]) => { if (v && (!Array.isArray(v) || v.length)) state[k] = v; });
+    state.friends = { invites: [], accepted: [], pending: [] };
     save();
+  }
+
+  function normalizeFriendName(value) {
+    return String(value || "").trim().replace(/^@/, "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function friendLabel(value) {
+    const text = normalizeFriendName(value);
+    if (!text) return "";
+    return text.split(" ").map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1).toLowerCase() : "").join(" ");
+  }
+  function friendBoardList() {
+    const rows = [...(Array.isArray(LB_FRIENDS) ? LB_FRIENDS : [])];
+    const seen = new Set(rows.map(([name]) => String(name).toLowerCase()));
+    for (const invite of state.friends.invites || []) {
+      const name = normalizeFriendName(invite);
+      if (!name || seen.has(name.toLowerCase())) continue;
+      rows.push([friendLabel(name), "✨", 0]);
+      seen.add(name.toLowerCase());
+    }
+    return rows;
+  }
+  function inviteFriend(rawName) {
+    const name = normalizeFriendName(rawName);
+    if (!name) return { ok: false, msg: "Enter a username to invite." };
+    const lower = name.toLowerCase();
+    const existing = new Set([...(state.friends.accepted || []).map((n) => normalizeFriendName(n).toLowerCase()), ...(state.friends.invites || []).map((n) => normalizeFriendName(n).toLowerCase())]);
+    const boardNames = Array.isArray(LB_FRIENDS) ? LB_FRIENDS.map(([n]) => String(n).toLowerCase()) : [];
+    if (existing.has(lower) || boardNames.includes(lower)) {
+      return { ok: false, msg: "That friend is already on your board." };
+    }
+    state.friends.invites.push(name);
+    state.friends.pending.push({ name, sentOn: today() });
+    if (Array.isArray(LB_FRIENDS)) {
+      LB_FRIENDS.push([friendLabel(name), "✨", 0]);
+    }
+    save();
+    return { ok: true, name: friendLabel(name), handle: name.toLowerCase().replace(/\s+/g, "_") };
   }
 
   // ---------- derived ----------
@@ -293,10 +337,51 @@ const GG = (() => {
     $$(".demo-sheet a.jump", root).forEach((a) => { a.style.cssText = "display:flex;gap:8px;padding:7px 4px;font-weight:800;border-bottom:1px solid #eef1ee"; });
   }
 
+  function attachFriendInviteHandlers() {
+    const addFriend = document.getElementById("add-friend");
+    if (!addFriend || addFriend.dataset.ggBound === "true") return;
+    addFriend.dataset.ggBound = "true";
+    addFriend.onclick = () => {
+      const sheet = openSheet(`
+        <h3 style="margin:0 0 10px">Invite a friend</h3>
+        <div class="stack" style="gap:10px">
+          <label class="tiny muted" for="friend-username">Username or handle</label>
+          <input id="friend-username" class="input" placeholder="@lena_codes" autocomplete="off" />
+          <div class="tiny muted">Prototype invites are saved in your browser and show up on the Friends board.</div>
+        </div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn btn-primary grow" data-send-friend>Send invite</button>
+          <button class="btn btn-ghost grow" data-close>Cancel</button>
+        </div>
+      `, (s) => {
+        const input = s.querySelector("#friend-username");
+        const send = s.querySelector("[data-send-friend]");
+        const fireInvite = () => {
+          const result = inviteFriend(input.value);
+          if (!result.ok) {
+            toast(result.msg);
+            return;
+          }
+          closeSheet();
+          toast(`📨 Invite sent to @${result.handle}!`);
+          if (/leaderboard\.html/.test(location.pathname)) setTimeout(() => location.reload(), 150);
+        };
+        if (input) {
+          input.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") fireInvite();
+          });
+          requestAnimationFrame(() => input.focus());
+        }
+        if (send) send.onclick = fireInvite;
+      });
+    };
+  }
+
   function init() {
     injectStatusbar();
     injectTabbar();
     injectDemoPanels();
+    attachFriendInviteHandlers();
     $$("[data-back]").forEach((b) => (b.onclick = (e) => { e.preventDefault(); history.length > 1 ? history.back() : (location.href = b.getAttribute("href") || "home.html"); }));
     animateBars();
   }
@@ -304,7 +389,7 @@ const GG = (() => {
   else init();
 
   return {
-    state, save, startFresh, restart, fastForward, level, displayName, firstName, badge, earned, badgeProgress,
+    state, save, startFresh, restart, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
     ranked, appRank, today, doneDaily, unlockBadge, completeQuest, addXP,
     $, $$, badgeHTML, avatarHTML, toast, openSheet, closeSheet, openModal, closeModal, confettiBurst, countUp, animateBars, copy, siteURL,
   };
