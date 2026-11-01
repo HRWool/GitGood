@@ -24,7 +24,7 @@ This is a **clickable prototype** for collecting feedback. Every link works, and
 | 3 | [Pick skills](https://hrwool.github.io/GitGood/skills.html) | Choose skills, add a custom one |
 | 4 | [First quest](https://hrwool.github.io/GitGood/quiz-intro.html) | Customer-story intro (skippable) |
 | 5 | [Exercise](https://hrwool.github.io/GitGood/exercise.html?q=first) | Fill the blanks (`orders`, `+=`), Run → confetti, XP, mystery chest, first badge |
-| 6 | [Home](https://hrwool.github.io/GitGood/home.html) | Streak, daily goal, quests, pathway, live feed |
+| 6 | [Home](https://hrwool.github.io/GitGood/home.html) | Start the featured quest; expand “Today's other quests” and “Explore more” for the rest |
 | 7 | [Notifications](https://hrwool.github.io/GitGood/notifications.html) | Toggle reminder types |
 | 8 | [Profile](https://hrwool.github.io/GitGood/profile.html) | Add a skill, pin badges |
 | 9 | [Classrooms](https://hrwool.github.io/GitGood/classes.html) | AI-led seasonal classes; one is recommended |

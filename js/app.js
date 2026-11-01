@@ -271,8 +271,8 @@ const GG = (() => {
     const tabs = [
       ["home", "home.html", "🏠", "Home"],
       ["classes", "classes.html", "🎓", "Classes"],
-      ["ranks", "leaderboard.html", "🏆", "Ranks"],
-      ["badges", "achievements.html", "🏅", "Badges"],
+      ["ranks", "leaderboard.html", "🏆", "Leaderboard"],
+      ["badges", "achievements.html", "🏅", "Achievements"],
       ["profile", "profile.html", "🦊", "Profile"],
     ];
     const nav = document.createElement("nav");

@@ -312,7 +312,7 @@ const PAGES = [
   { file: "skills.html", title: "Pick skills", group: "Onboarding", tip: "Your picks shape daily quests and the recommended classroom.", ask: ["Which skills are missing?"] },
   { file: "quiz-intro.html", title: "First quest", group: "Onboarding", tip: "The first quest is framed as a customer request and can be skipped.", ask: ["Does the story framing make it more fun?"] },
   { file: "exercise.html?q=first", title: "Exercise", group: "Onboarding", tip: "Fill in the blanks, press Run. Wrong answers shake; hints are free.", ask: ["Is 5 minutes the right size?", "Too easy or too hard?"] },
-  { file: "home.html", title: "Home", group: "Daily loop", tip: "Streak, daily goal, 3 daily quests, pathway and a social feed.", ask: ["What would bring you back tomorrow?"] },
+  { file: "home.html", title: "Home", group: "Daily loop", tip: "One featured quest, daily progress, streak, and optional learning path and community sections.", ask: ["What would bring you back tomorrow?"] },
   { file: "notifications.html", title: "Notifications", group: "Daily loop", tip: "Reminders read like customer requests. Toggle what you get.", ask: ["Which of these would annoy you?"] },
   { file: "profile.html", title: "Profile", group: "Daily loop", tip: "Level, skills, pinned badges, learning path and streak freezes.", ask: ["What else belongs on your profile?"] },
   { file: "classes.html", title: "Classrooms", group: "Classrooms", tip: "AI-led seasonal classrooms. One is recommended from your skills.", ask: ["Would you join more than one?"] },
