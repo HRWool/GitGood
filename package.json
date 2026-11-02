@@ -1,0 +1,25 @@
+{
+  "name": "gitgood",
+  "description": "Git Good clickable prototype (ITSC 3155 Group 7)",
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "start": "python3 -m http.server 8000",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HRWool/GitGood.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/HRWool/GitGood/issues"
+  },
+  "homepage": "https://github.com/HRWool/GitGood#readme",
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-plugin-html": "^8.2.1",
+    "globals": "^15.15.0"
+  },
+  "private": true,
+  "version": "1.0.0"
+}
