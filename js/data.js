@@ -86,11 +86,13 @@ const BADGES = [
   { id: "helper", name: "Study Buddy", icon: "🤝", type: "Seasons", slug: "p41r", req: "Add 3 friends to your leaderboard.", goal: 3, have: 2 },
 ];
 
-/* Exercises. Code lines use {0}, {1}… for blanks; `answers` lists accepted values per blank. */
+/* Exercises. Code lines use {0}, {1}… for blanks; `answers` lists accepted values per blank.
+   `practiced` lists the concepts a quest covers; the reward screen shows them as "Skills practiced". */
 const QUESTS = {
   first: {
     title: "Count the café orders",
     skill: "Python", icon: "☕", xp: 50, minutes: 5, level: "Easy",
+    practiced: ["for loops", "lists", "running totals"],
     speaker: { name: "Prospector Café", who: "☕", role: "Customer" },
     story: "Hi! We sold 3, 5 and 8 lattes this morning. Can you write a loop that adds them up so I know how many cups to restock?",
     prompt: "Fill in the blanks so the loop adds every order to total.",
@@ -110,6 +112,7 @@ const QUESTS = {
   "class-while": {
     title: "While loops and counters",
     skill: "Python", icon: "🔁", xp: 50, minutes: 8, level: "Easy",
+    practiced: ["while loops", "comparison operators", "counters"],
     speaker: { name: "Prof. Byte", who: "🤖", role: "AI instructor · Python Beginners" },
     story: "The pep band wants the crowd to chant exactly three times. Let's use a while loop with a counter so it stops on time!",
     prompt: "Make the loop run exactly 3 times.",
@@ -128,6 +131,7 @@ const QUESTS = {
   "class-timed": {
     title: "Timed: loop challenge",
     skill: "Python", icon: "⏱️", xp: 75, minutes: 5, level: "Medium", timed: 300,
+    practiced: ["for loops", "if statements", "counting matches"],
     speaker: { name: "Prof. Byte", who: "🤖", role: "AI instructor · Python Beginners" },
     story: "Speed round! The registrar needs a quick count of students over 21 credit hours. Beat the clock!",
     prompt: "Count how many values in credits are greater than 21.",
@@ -148,6 +152,7 @@ const QUESTS = {
   "lb-timed": {
     title: "Timed: list loops",
     skill: "Python", icon: "⏱️", xp: 50, minutes: 5, level: "Easy", timed: 300,
+    practiced: ["for loops", "lists", "len()"],
     speaker: { name: "Niner Rec Center", who: "🏀", role: "Customer" },
     story: "We need to greet everyone on today's pickup roster. Quick—can you loop through the names before tip-off?",
     prompt: "Print a greeting for every name on the roster.",
@@ -166,6 +171,7 @@ const QUESTS = {
   "daily-web": {
     title: "Center the signup button",
     skill: "Web", icon: "🌐", xp: 30, minutes: 4, level: "Easy",
+    practiced: ["flexbox", "centering", "CSS properties"],
     speaker: { name: "Student Gov't", who: "🗳️", role: "Customer" },
     story: "Our election page button is stuck in the corner. Can you center it with flexbox?",
     prompt: "Center the button horizontally and vertically.",
@@ -184,6 +190,7 @@ const QUESTS = {
   "daily-git": {
     title: "Branch before you build",
     skill: "Git", icon: "🔀", xp: 30, minutes: 3, level: "Easy",
+    practiced: ["branching", "commits", "commit messages"],
     speaker: { name: "Team Lead", who: "🧑‍💻", role: "Customer" },
     story: "Please don't commit straight to main! Make a feature branch, then commit your fix with a message.",
     prompt: "Create a branch, then commit.",
@@ -200,6 +207,7 @@ const QUESTS = {
   "daily-py": {
     title: "Fix the off-by-one",
     skill: "Python", icon: "🐍", xp: 40, minutes: 5, level: "Easy",
+    practiced: ["range()", "off-by-one errors", "for loops"],
     speaker: { name: "Atkins Library", who: "📚", role: "Customer" },
     story: "Our countdown sign skips number 1! It should show 5, 4, 3, 2, 1. Can you fix the range?",
     prompt: "Make the countdown include 1.",

@@ -153,6 +153,14 @@
   }
   $("#run").addEventListener("click", run);
 
+  // --- skills practiced summary (issue #1): built from the same quest data as the exercise ---
+  function practicedHTML() {
+    const skill = SKILLS.find((s) => s.id === Q.skill);
+    const main = `<span class="chip on">${skill ? skill.icon : "✨"} ${Q.skill}</span>`;
+    const concepts = (Q.practiced || []).map((c) => `<span class="chip">${esc(c)}</span>`).join("");
+    return main + concepts;
+  }
+
   // --- reward modal: confetti, XP count-up, streak, mystery chest, badge ---
   const WINS = ["Commit complete! 🎉", "Merged to main! 🚀", "Pushed it! 💪", "Clean build! ✨", "No bugs here! 🐞🚫"];
   function reward() {
@@ -183,6 +191,13 @@
             <div class="row between small"><b>Level ${lvl.n}${lvl.n > lvlBefore ? " 🎉 LEVEL UP!" : ""}</b><span class="muted">${lvl.into}/${lvl.need} XP</span></div>
             <div class="bar gold" style="margin-top:6px"><span data-w="${lvl.pct}"></span></div>
           </div>
+        </div>
+        <div class="reward-line practiced" id="practiced" aria-label="Skills practiced">
+          <span class="ri">🧠</span>
+          <span class="grow">
+            <span class="small muted" style="display:block;font-weight:900;letter-spacing:.04em">SKILLS PRACTICED</span>
+            <span class="chips practiced-chips">${practicedHTML()}</span>
+          </span>
         </div>
         <div id="chest-wrap" class="card flat">
           <div class="small muted" style="font-weight:800">Tap the mystery chest!</div>
