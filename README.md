@@ -112,10 +112,19 @@ npm run lint      # ESLint; must report 0 problems
 3. **#3, no matches:** Sign up and pick only a custom skill (for example "React"). Home shows "No daily quests yet" with an **Add a skill** button.
 
 ## AI usage disclosure
-We used AI tools during development and reviewed everything they produced.
-- **Claude Code** (Anthropic):
-  - wrote the user stories for issues #4 to #7 and tidied issues #1 to #3
-  - set up ESLint and fixed its warnings (#8)
-  - implemented and tested #1 and #3 (#9, #10)
-- **GitHub Copilot and the Figma MCP server:** used in VS Code with our Figma prototype, as part of the Sprint 1 setup.
-- **What we checked:** the team reviewed each change against the issue's acceptance criteria. We ran the app in a browser and ran the lint and test commands above, and reviewed every pull request before merging it.
+Each of us picked the tools that fit how we work. We checked with our professor, who said the goal is to show a working development process: user stories → issues → sprint planning → feature branches → pull requests → testing. Which AI tools we use matters less. Whatever the tool, every change went through the same steps: a GitHub issue with acceptance criteria, a branch, a review, and a test.
+
+| Member | Tools | How they were used |
+|---|---|---|
+| Heidi W. | Claude Code (Anthropic); GitHub Copilot, VS Code and the Figma MCP server connected per the Sprint 1 setup | Built and refined the clickable prototype. Wrote and refined the Sprint 1 user stories (#1 to #7). Set up ESLint (#8). Implemented and tested #1 and #3 (#9, #10). Wrote the README (#11). |
+| AJ B. | VS Code, GitHub Copilot and the Figma MCP server, set up following the Sprint 1 instructions | Decluttered the home dashboard (#2). |
+| Athena D. | VS Code | Built the friend invite system (#6). |
+| Idol H. | Tools of his own choosing | His Sprint 1 work. |
+
+**What we checked ourselves:** AI suggestions were a starting point, never the final word. Before merging, we:
+- read each change and checked it against the issue's acceptance criteria
+- ran the app in a browser
+- ran `npm run lint` and `npm test`
+- reviewed the pull request
+
+When something was wrong, we fixed it before merging. One example was a lint error in the exercise page's code highlighter.
