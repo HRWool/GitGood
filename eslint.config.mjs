@@ -29,4 +29,9 @@ export default [
       "no-redeclare": ["error", { builtinGlobals: false }],
     },
   },
+  {
+    // Unit tests run in Node, not the browser.
+    files: ["tests/**/*.js"],
+    languageOptions: { globals: { ...globals.node } },
+  },
 ];
