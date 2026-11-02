@@ -82,10 +82,10 @@
     const hash = text.indexOf("#");
     if (hash >= 0 && !/["']/.test(text.slice(hash))) { comment = text.slice(hash); text = text.slice(0, hash); }
     const strs = [];
-    // Park strings behind letter-only placeholders so the keyword/number passes can't touch them.
-    let out = esc(text).replace(/"[^"]*"/g, (m) => { strs.push(m); return `\u0000${String.fromCharCode(65 + strs.length - 1)}\u0000`; });
+    // Park strings behind letter-only placeholders (private-use \uE000 markers) so the keyword/number passes can't touch them.
+    let out = esc(text).replace(/"[^"]*"/g, (m) => { strs.push(m); return `\uE000${String.fromCharCode(65 + strs.length - 1)}\uE000`; });
     out = out.replace(KW, '<span class="kw">$1</span>').replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
-    out = out.replace(/\u0000([A-Z])\u0000/g, (_, c) => `<span class="str">${strs[c.charCodeAt(0) - 65]}</span>`);
+    out = out.replace(/\uE000([A-Z])\uE000/g, (_, c) => `<span class="str">${strs[c.charCodeAt(0) - 65]}</span>`);
     return out + (comment ? `<span class="cm">${esc(comment)}</span>` : "");
   }
   $("#code").innerHTML = Q.code.map((line) =>

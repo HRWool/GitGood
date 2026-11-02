@@ -21,7 +21,7 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
-      globals: { ...globals.browser, ...shared, confetti: "readonly" },
+      globals: { ...globals.browser, ...shared, confetti: "readonly", QRCode: "readonly" },
     },
     rules: {
       // Top-level declarations in shared scripts are used by other files.

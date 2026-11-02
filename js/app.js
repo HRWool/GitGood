@@ -9,7 +9,7 @@ const GG = (() => {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) return Object.assign(clone(DEFAULT_STATE), JSON.parse(raw));
-    } catch (e) { /* storage blocked: fall back to seed data */ }
+    } catch { /* storage blocked: fall back to seed data */ }
     return clone(DEFAULT_STATE);
   }
   const state = load();
@@ -19,7 +19,7 @@ const GG = (() => {
   if (!Array.isArray(state.friends.pending)) state.friends.pending = [];
 
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* ignore */ }
   }
   function startFresh(profile) {
     Object.keys(state).forEach((k) => delete state[k]);
@@ -28,7 +28,7 @@ const GG = (() => {
     save();
   }
   function restart() {
-    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(KEY); } catch { /* ignore */ }
     location.href = "index.html";
   }
   // Jump a new user one week ahead so the leaderboard/streak screens have real-looking data.
@@ -242,7 +242,7 @@ const GG = (() => {
 
   async function copy(text, msg = "Copied!") {
     try { await navigator.clipboard.writeText(text); toast("📋 " + msg); }
-    catch (e) { toast("Copy: " + text, 3500); }
+    catch { toast("Copy: " + text, 3500); }
   }
 
   // Absolute URL for a page in this site (works locally and on GitHub Pages).
@@ -342,7 +342,7 @@ const GG = (() => {
     if (!addFriend || addFriend.dataset.ggBound === "true") return;
     addFriend.dataset.ggBound = "true";
     addFriend.onclick = () => {
-      const sheet = openSheet(`
+      openSheet(`
         <h3 style="margin:0 0 10px">Invite a friend</h3>
         <div class="stack" style="gap:10px">
           <label class="tiny muted" for="friend-username">Username or handle</label>
