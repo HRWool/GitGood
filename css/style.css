@@ -617,6 +617,9 @@ body[data-tab="home"] #streak .week .d.today i { border: 2px solid var(--green);
   padding: 10px 12px; border-radius: 14px; background: var(--bg); font-weight: 800; font-size: 14px;
 }
 .reward-line .ri { font-size: 24px; }
+.reward-line.practiced { align-items: flex-start; }
+.practiced-chips { margin-top: 6px; gap: 6px; }
+.practiced-chips .chip { padding: 5px 10px; font-size: 12px; }
 
 /* utility animations */
 .pop-in { animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
