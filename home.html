@@ -48,11 +48,12 @@
   $("#lvl-xp").textContent = `${lvl.into} / ${lvl.need} XP`;
   $("#lvl-bar").dataset.w = lvl.pct;
 
+  const daily = GG.dailyQuests(); // only quests for the student's skills (issue #3)
   const done = GG.doneDaily();
   const anyToday = state.doneToday.length > 0;
-  const nextQ = DAILY.find((q) => !state.doneToday.includes(q)) || DAILY[0];
+  const nextQ = daily.find((q) => !state.doneToday.includes(q)) || daily[0];
   const firstQuest = state.fresh && !state.earned.includes("hello-world");
-  const focusQuest = firstQuest ? QUESTS.first : done < DAILY.length ? QUESTS[nextQ] : null;
+  const focusQuest = firstQuest ? QUESTS.first : done < daily.length ? QUESTS[nextQ] : null;
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const cls = CLASSES.find((c) => c.id === state.joinedClass);
   const lbRows = GG.ranked(LB_APP, state.xp);
@@ -63,7 +64,7 @@
   if (anyToday) {
     parts.push(`<div class="banner good rise dashboard-secured" role="status">
       <span class="bi" aria-hidden="true">✓</span>
-      <span class="grow"><b>Streak secured for today!</b><br><span class="small">${done < DAILY.length ? `${DAILY.length - done} more daily quest${DAILY.length - done === 1 ? "" : "s"} for the bonus chest.` : "All daily quests complete — great work!"}</span></span>
+      <span class="grow"><b>Streak secured for today!</b><br><span class="small">${done < daily.length ? `${daily.length - done} more daily quest${daily.length - done === 1 ? "" : "s"} for the bonus chest.` : "All daily quests complete — great work!"}</span></span>
     </div>`);
   }
 
@@ -78,16 +79,17 @@
 
   parts.push(`<section class="dashboard-focus card rise" aria-labelledby="focus-title">
     <div class="card-h">
-      <div><div class="dashboard-eyebrow">TODAY'S FOCUS</div><h2 id="focus-title">${focusQuest ? focusQuest.title : "Daily goal complete"}</h2></div>
-      <div class="ring" data-p="${Math.round(done / DAILY.length * 100)}" style="--size:54px"><div>${done}/${DAILY.length}<small>daily</small></div></div>
+      <div><div class="dashboard-eyebrow">TODAY'S FOCUS</div><h2 id="focus-title">${focusQuest ? focusQuest.title : daily.length ? "Daily goal complete" : "No daily quests yet"}</h2></div>
+      <div class="ring" data-p="${daily.length ? Math.round(done / daily.length * 100) : 0}" style="--size:54px"><div>${done}/${daily.length}<small>daily</small></div></div>
     </div>
-    <p class="small muted">${focusQuest ? `${focusQuest.skill} · ~${focusQuest.minutes} min · +${focusQuest.xp} XP` : "All three daily quests are complete. Great work!"}</p>
+    <p class="small muted">${focusQuest ? `${focusQuest.skill} · ~${focusQuest.minutes} min · +${focusQuest.xp} XP` : daily.length ? "All of today's daily quests are complete. Great work!" : "There are no quests for your skills yet. Add a skill like Python, Java or SQL to get daily quests."}</p>
+    ${!focusQuest && !daily.length ? `<a class="btn btn-ghost btn-block" href="profile.html">Add a skill</a>` : ""}
     ${focusQuest ? `<a class="btn btn-primary btn-block dashboard-primary" href="${firstQuest ? "quiz-intro.html" : `exercise.html?q=${nextQ}`}">${firstQuest ? "Start your first quest" : "Start quest"} <span aria-hidden="true">→</span></a>` : ""}
     ${!anyToday && state.streak > 0 ? `<p class="dashboard-nudge">Complete a quest today to keep your ${state.streak}-day streak.</p>` : ""}
   </section>`);
 
-  const otherDaily = DAILY.filter((id) => !focusQuest || firstQuest || id !== nextQ);
-  parts.push(`<details class="dashboard-details card rise">
+  const otherDaily = daily.filter((id) => !focusQuest || firstQuest || id !== nextQ);
+  if (otherDaily.length) parts.push(`<details class="dashboard-details card rise">
     <summary><span>${focusQuest && !firstQuest ? "Other daily quests" : "Today's daily quests"}</span><span class="dashboard-toggle" aria-hidden="true"></span></summary>
     <div class="dashboard-quest-list">${otherDaily.map((id) => {
       const q = QUESTS[id], isDone = state.doneToday.includes(id);

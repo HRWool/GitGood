@@ -413,3 +413,16 @@ const PAGES = [
   { file: "verify.html", title: "Public verify page", group: "Achievements", tip: "Employer view: the public page behind a shared badge link or QR code. No login needed. Shows your newest badge.", ask: ["Does this look trustworthy?"] },
   { file: "storyboard.html", title: "📖 Storyboard & sketches", group: "Behind the design", tip: "Storyboard and sketches that led to each screen.", ask: [] },
 ];
+
+/* Issue #3: daily quests follow the skills the student picked (their career path settings).
+   Unknown or custom skills are ignored; with several skills, quests rotate between them so
+   every picked skill gets a turn. Returns quest ids from DAILY, at most `max`. */
+function dailyQuestsFor(skills, max = 3) {
+  const known = [...new Set(Array.isArray(skills) ? skills : [])].filter((s) => SKILLS.some((k) => k.id === s));
+  const bySkill = known.map((s) => DAILY.filter((id) => QUESTS[id] && QUESTS[id].skill === s));
+  const out = [];
+  for (let round = 0; out.length < max && bySkill.some((list) => list.length > round); round++) {
+    for (const list of bySkill) if (list[round] && out.length < max) out.push(list[round]);
+  }
+  return out;
+}
