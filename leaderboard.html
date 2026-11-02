@@ -64,7 +64,7 @@
         <b style="font-size:20px">You moved to #${state.lastRankMove.to}!</b>
         <div class="small muted">${state.lastRankMove.from !== state.lastRankMove.to ? `Up from #${state.lastRankMove.from}. ` : ""}${above ? `Next: ${above.xp - myXp} XP to pass #${above.rank}` : "You're #1!"}</div>
         <div class="row" style="margin-top:12px">
-          <a class="btn btn-primary btn-sm grow" href="exercise.html?q=${DAILY.find((q) => !state.doneToday.includes(q)) || "daily-py"}">Another quest</a>
+          <a class="btn btn-primary btn-sm grow" href="${(() => { const d = GG.dailyQuests(); const q = d.find((id) => !state.doneToday.includes(id)) || d[0]; return q ? `exercise.html?q=${q}` : "home.html"; })()}">Another quest</a>
           <a class="btn btn-ghost btn-sm grow" href="home.html">Done for today</a>
         </div></div>`);
     }

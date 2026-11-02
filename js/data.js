@@ -221,9 +221,99 @@ const QUESTS = {
     hint: "range() stops BEFORE the end value, so to include 1 you stop at 0. The finale can be anything fun like Liftoff.",
     next: "home.html",
   },
+  "daily-java": {
+    title: "Print the shuttle stops",
+    skill: "Java", icon: "☕", xp: 40, minutes: 5, level: "Easy",
+    practiced: ["for loops", "arrays", "array indexing"],
+    speaker: { name: "Niner Transit", who: "🚌", role: "Customer" },
+    story: "Our shuttle display skipped a stop yesterday. Can you loop through the stops array and print every one?",
+    prompt: "Print every stop in the array, in order.",
+    code: [
+      "String[] stops = {\"Union\", \"Library\", \"Gym\"};",
+      "for (int i = 0; i {0} stops.length; i++) {",
+      "    System.out.println(stops[{1}]);",
+      "}",
+    ],
+    answers: [["<"], ["i"]],
+    tests: ["Stops before running off the end", "Uses the loop index", "Prints all 3 stops"],
+    hint: "Keep going while i is less than stops.length, and use i to pick each stop.",
+    next: "home.html",
+  },
+  "daily-sql": {
+    title: "Find the full-time students",
+    skill: "SQL", icon: "🗄️", xp: 40, minutes: 4, level: "Easy",
+    practiced: ["SELECT", "WHERE filters", "comparison operators"],
+    speaker: { name: "Registrar's Office", who: "🏛️", role: "Customer" },
+    story: "We need a list of everyone taking 12 or more credits this semester. Can you filter the students table?",
+    prompt: "Return students taking 12 or more credits.",
+    code: [
+      "SELECT name, credits",
+      "FROM students",
+      "{0} credits {1} 12;",
+    ],
+    answers: [["WHERE", "where"], [">="]],
+    tests: ["Filters the rows", "Includes exactly 12 credits", "Returns full-time students"],
+    hint: "WHERE filters rows, and >= keeps students with exactly 12 credits too.",
+    next: "home.html",
+  },
+  "daily-dsa": {
+    title: "Find the high score",
+    skill: "DSA", icon: "🧩", xp: 40, minutes: 5, level: "Easy",
+    practiced: ["linear search", "tracking a maximum", "comparisons"],
+    speaker: { name: "Esports Club", who: "🎮", role: "Customer" },
+    story: "Tournament night! Scan the scores and tell us the best one so we can crown a winner.",
+    prompt: "Keep the biggest score in best.",
+    code: [
+      "scores = [72, 95, 88]",
+      "best = scores[0]",
+      "for s in scores:",
+      "    if s {0} best:",
+      "        best = {1}",
+      "print(best)   # should print 95",
+    ],
+    answers: [[">"], ["s"]],
+    tests: ["Compares each score to best", "Updates best when it finds a bigger one", "Prints 95"],
+    hint: "Replace best whenever the current score s is greater than it.",
+    next: "home.html",
+  },
+  "daily-cpp": {
+    title: "Total the parking fines",
+    skill: "C++", icon: "⚙️", xp: 40, minutes: 5, level: "Easy",
+    practiced: ["range-based for loops", "arrays", "running totals"],
+    speaker: { name: "Parking Services", who: "🅿️", role: "Customer" },
+    story: "Three tickets came in today. Add them up so we can close out the register.",
+    prompt: "Add every fine to total, then print it.",
+    code: [
+      "int fines[] = {20, 35, 15};",
+      "int total = 0;",
+      "for (int f : fines) total {0} f;",
+      "std::cout << {1};   // prints 70",
+    ],
+    answers: [["+="], ["total"]],
+    tests: ["Adds each fine", "Prints the running total", "Total is 70"],
+    hint: "+= adds f to the total each pass; then print total.",
+    next: "home.html",
+  },
+  "daily-php": {
+    title: "Greet the new member",
+    skill: "PHP", icon: "🐘", xp: 30, minutes: 3, level: "Easy",
+    practiced: ["echo", "string concatenation", "variables"],
+    speaker: { name: "49ers Coding Club", who: "💻", role: "Customer" },
+    story: "Our sign-up page should say hi to each new member by name. Can you finish the greeting?",
+    prompt: "Print a welcome message that includes $name.",
+    code: [
+      "$name = \"Lena\";",
+      "{0} \"Welcome, \" {1} $name;",
+    ],
+    answers: [["echo", "print"], ["."]],
+    tests: ["Prints output", "Joins the strings", "Says Welcome, Lena"],
+    hint: "echo prints in PHP, and a dot (.) joins two strings.",
+    next: "home.html",
+  },
 };
 
-const DAILY = ["daily-py", "daily-web", "daily-git"];
+// Pool of daily quests. Each student only gets the ones that match their skills (see GG.dailyQuests).
+const DAILY = ["daily-py", "daily-web", "daily-git", "daily-java", "daily-sql", "daily-dsa", "daily-cpp", "daily-php"];
 
 const CLASSES = [
   {
@@ -331,3 +421,16 @@ const PAGES = [
   { file: "verify.html", title: "Public verify page", group: "Achievements", tip: "Employer view: the public page behind a shared badge link or QR code. No login needed. Shows your newest badge.", ask: ["Does this look trustworthy?"] },
   { file: "storyboard.html", title: "📖 Storyboard & sketches", group: "Behind the design", tip: "Storyboard and sketches that led to each screen.", ask: [] },
 ];
+
+/* Issue #3: daily quests follow the skills the student picked (their career path settings).
+   Unknown or custom skills are ignored; with several skills, quests rotate between them so
+   every picked skill gets a turn. Returns quest ids from DAILY, at most `max`. */
+function dailyQuestsFor(skills, max = 3) {
+  const known = [...new Set(Array.isArray(skills) ? skills : [])].filter((s) => SKILLS.some((k) => k.id === s));
+  const bySkill = known.map((s) => DAILY.filter((id) => QUESTS[id] && QUESTS[id].skill === s));
+  const out = [];
+  for (let round = 0; out.length < max && bySkill.some((list) => list.length > round); round++) {
+    for (const list of bySkill) if (list[round] && out.length < max) out.push(list[round]);
+  }
+  return out;
+}

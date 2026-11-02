@@ -102,7 +102,9 @@ const GG = (() => {
   }
   const appRank = () => ranked(LB_APP, state.xp).find((r) => r.me).rank;
   const today = () => new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const doneDaily = () => DAILY.filter((q) => state.doneToday.includes(q)).length;
+  // Today's daily quests, filtered to the student's skills (issue #3).
+  const dailyQuests = () => dailyQuestsFor(state.skills);
+  const doneDaily = () => dailyQuests().filter((q) => state.doneToday.includes(q)).length;
 
   // ---------- actions ----------
   function unlockBadge(id) {
@@ -390,7 +392,7 @@ const GG = (() => {
 
   return {
     state, save, startFresh, restart, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
-    ranked, appRank, today, doneDaily, unlockBadge, completeQuest, addXP,
+    ranked, appRank, today, dailyQuests, doneDaily, unlockBadge, completeQuest, addXP,
     $, $$, badgeHTML, avatarHTML, toast, openSheet, closeSheet, openModal, closeModal, confettiBurst, countUp, animateBars, copy, siteURL,
   };
 })();
