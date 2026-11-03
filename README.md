@@ -112,19 +112,32 @@ npm run lint      # ESLint; must report 0 problems
 3. **#3, no matches:** Sign up and pick only a custom skill (for example "React"). Home shows "No daily quests yet" with an **Add a skill** button.
 
 ## AI usage disclosure
-Each of us picked the tools that fit how we work. We checked with our professor, who said the goal is to show a working development process: user stories → issues → sprint planning → feature branches → pull requests → testing. Which AI tools we use matters less. Whatever the tool, every change went through the same steps: a GitHub issue with acceptance criteria, a branch, a review, and a test.
+Each team member lists the AI tools they used, what the tools helped with, and how they checked the results. Our professor told us the goal is to show the development workflow. Which tools we use matters less.
 
-| Member | Tools | How they were used |
-|---|---|---|
-| Heidi W. | Claude Code (Anthropic); GitHub Copilot, VS Code and the Figma MCP server connected per the Sprint 1 setup | Built and refined the clickable prototype. Wrote and refined the Sprint 1 user stories (#1 to #7). Set up ESLint (#8). Implemented and tested #1 and #3 (#9, #10). Wrote the README (#11). |
-| AJ B. | VS Code, GitHub Copilot and the Figma MCP server, set up following the Sprint 1 instructions | Decluttered the home dashboard (#2). |
-| Athena D. | VS Code | Built the friend invite system (#6). |
-| Idol H. | Tools of his own choosing | His Sprint 1 work. |
+### Heidi W.
+- **Tools:** Claude Code (Anthropic). I also connected GitHub Copilot, VS Code and the Figma MCP server, following the Sprint 1 setup.
+- **What they helped with:**
+  - building and refining the clickable prototype
+  - writing and refining the Sprint 1 user stories (#1 to #7)
+  - setting up ESLint (#8)
+  - implementing and testing #1 and #3 (#9, #10)
+  - writing the README (#11, #12)
+- **How I checked the results:** I checked each change against its issue's acceptance criteria, ran the app in a browser, ran `npm run lint` and `npm test`, and reviewed the pull request before merging.
 
-**What we checked ourselves:** AI suggestions were a starting point, never the final word. Before merging, we:
-- read each change and checked it against the issue's acceptance criteria
-- ran the app in a browser
-- ran `npm run lint` and `npm test`
-- reviewed the pull request
+### AJ B.
+<!-- AJ: replace the lines below with your answers. -->
+- **Tools:** _to be added_
+- **What they helped with:** _to be added_
+- **How I checked the results:** _to be added_
 
-When something was wrong, we fixed it before merging. One example was a lint error in the exercise page's code highlighter.
+### Athena D.
+<!-- Athena: replace the lines below with your answers. -->
+- **Tools:** _to be added_
+- **What they helped with:** _to be added_
+- **How I checked the results:** _to be added_
+
+### Idol H.
+<!-- Idol: replace the lines below with your answers. -->
+- **Tools:** _to be added_
+- **What they helped with:** _to be added_
+- **How I checked the results:** _to be added_
