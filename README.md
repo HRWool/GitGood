@@ -134,10 +134,10 @@ Each team member lists the AI tools they used, what the tools helped with, and h
 - **How I checked the results:** _to be added_
 
 ### Athena D.
-<!-- Athena: replace the lines below with your answers. -->
-- **Tools:** _to be added_
-- **What they helped with:** _to be added_
-- **How I checked the results:** _to be added_
+- **Tools:** VSCode (Microsoft), GitHub Copilot (Set up as listed)
+- **What they helped with:** Introduced idea to declutter the UI, created the friend invite system.
+
+- **How I checked the results:** Manually checked against the acceptance criteria to make sure that the addition was working. Checked adding a friend, checked the friend appearing, checked multiple friend additions, checked if friends remain after refresh.
 
 ### Idol H.
 <!-- Idol: replace the lines below with your answers. -->
