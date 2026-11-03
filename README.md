@@ -127,25 +127,24 @@ Each team member lists the AI tools they used, what the tools helped with, and h
   - implementing and testing #1 and #3 (#9, #10)
   - writing the README (#11, #12)
 - **How I checked the results:** I checked each change against its issue's acceptance criteria, ran the app in a browser, ran `npm run lint` and `npm test`, and reviewed the pull request before merging.
+- **Commit history:** commits authored by **Claude** (the `claude` GitHub account) were made by Claude Code on Heidi's behalf, in her pull requests. She reviewed and merged each one.
 
 ### AJ B.
-<!-- AJ: replace the lines below with your answers. -->
-- **Tools:** _to be added_
-- **What they helped with:** _to be added_
+- **Tools:** VS Code, GitHub Copilot and the Figma MCP server, set up following the Sprint 1 instructions.
+- **What they helped with:** decluttering the home dashboard (#2, commit 37fe499).
+<!-- AJ: replace the line below with how you checked your change. -->
 - **How I checked the results:** _to be added_
 
 ### Athena D.
 - **Tools:** VSCode (Microsoft), GitHub Copilot (Set up as listed)
 - **What they helped with:** Introduced idea to declutter the UI, created the friend invite system.
-
 - **How I checked the results:** Manually checked against the acceptance criteria to make sure that the addition was working. Checked adding a friend, checked the friend appearing, checked multiple friend additions, checked if friends remain after refresh.
 
 ### Idol H.
-<!-- Idol: replace the lines below with your answers. -->
-- **Tools:** Visual Studio Code, Github Copilot
-- **What they helped with:** 
+- **Tools:** Visual Studio Code, GitHub Copilot
+- **What they helped with:**
   - suggested and implemented user interface changes to reduce visual clutter based on user story
   - some changes were made manually by myself
-- **How I checked the results:** _to be added_
+- **How I checked the results:**
   - previewed changes in the browser and compared against acceptance criteria
   - verified changes did not affect other features
