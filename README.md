@@ -141,6 +141,10 @@ Each team member lists the AI tools they used, what the tools helped with, and h
 
 ### Idol H.
 <!-- Idol: replace the lines below with your answers. -->
-- **Tools:** _to be added_
-- **What they helped with:** _to be added_
+- **Tools:** Visual Studio Code, Github Copilot
+- **What they helped with:** 
+  - suggested and implemented user interface changes to reduce visual clutter based on user story
+  - some changes were made manually by myself
 - **How I checked the results:** _to be added_
+  - previewed changes in the browser and compared against acceptance criteria
+  - verified changes did not affect other features
