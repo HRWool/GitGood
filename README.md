@@ -7,6 +7,7 @@
 Git Good is a gamified coding-practice app, just for UNCC computing students, that turns short daily practice into a habit and lets students earn shareable proof of their progress.
 
 ### ▶ Live prototype: **https://hrwool.github.io/GitGood/**
+### ✅ Sprint 1 testing evidence: **[docs/testing-evidence.md](docs/testing-evidence.md)**
 ### 📖 Design story (storyboard + sketches): **https://hrwool.github.io/GitGood/story**
 
 This is a **clickable prototype** for collecting feedback. Every link works, and progress (XP, streak, badges) is saved in your browser. There's no backend; all data is simulated.
@@ -98,6 +99,8 @@ npm install
 | #7 | **Linting** with ESLint. | #8 |
 
 ## Testing
+📸 **[Testing evidence with screenshots](docs/testing-evidence.md)**: every acceptance criterion for Sprint 1, with the screenshot or test that shows it was met.
+
 **Automated**
 ```bash
 npm test          # unit tests (node --test "tests/*.test.js")
