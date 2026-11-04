@@ -132,8 +132,7 @@ Each team member lists the AI tools they used, what the tools helped with, and h
 ### AJ B.
 - **Tools:** VS Code, GitHub Copilot and the Figma MCP server, set up following the Sprint 1 instructions.
 - **What they helped with:** decluttering the home dashboard (#2, commit 37fe499).
-<!-- AJ: replace the line below with how you checked your change. -->
-- **How I checked the results:** _to be added_
+- **How I checked the results:** After changing and implementing the results, I verified the UI changes made within vsCode internal browser to make sure each component was still working and coherent within the prototype
 
 ### Athena D.
 - **Tools:** VSCode (Microsoft), GitHub Copilot (Set up as listed)
