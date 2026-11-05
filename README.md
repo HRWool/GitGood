@@ -69,11 +69,13 @@ Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 - `eslint.config.mjs`: lint rules for `js/` and the inline scripts in every page
 
 ### Data model
-There's no backend yet. These objects in `js/data.js` are what a future API would return:
+There's no backend yet. The clickable prototype stores progress in localStorage. The PostgreSQL/Prisma starting schema is in [`prisma/schema.prisma`](prisma/schema.prisma); it models the persistent entities and relationships a future backend would need. These objects in `js/data.js` are the current simulated data:
 - **Student state** (`DEFAULT_STATE` / `FRESH_STATE`): name, username, UNCC email, avatar, `skills`, `xp`, `streak`, `week`, `freezes`, earned and pinned badges, quests done today, joined classroom, notification prefs, and friends. `js/app.js` saves it in localStorage.
 - **Quest** (`QUESTS`): title, `skill`, level, XP, minutes, `practiced` concepts, customer story, code with blanks, accepted answers, tests and a hint. `DAILY` lists the daily quests.
 - **Badge** (`BADGES`): id, name, icon, type, requirement, and a `goal`/`have` count for progress badges.
 - **Classroom** (`CLASSES`) and leaderboards (`LB_APP`, `LB_CLASS`, `LB_FRIENDS`).
+
+XP totals, streaks, ranks, and badge progress are intended to be derived from dated activity and transaction records rather than stored as independent counters. The schema provides relations and uniqueness constraints; domain checks that span multiple rows (such as the three-quest daily limit, badge pin limit, friendship-pair ordering, valid classroom completion, and nonnegative inventory balances) must be enforced transactionally by the future backend. Normalize emails, usernames, and custom skill names before writes. Learning paths and leaderboard snapshots are included as schema support for the screens' existing previews.
 
 ## Run it locally
 You need a web browser and Python 3 to serve the site. Node.js 18+ is only needed for linting and tests.

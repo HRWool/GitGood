@@ -1,0 +1,561 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  TIMED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  PASSED
+  ABANDONED
+  TIMED_OUT
+}
+
+enum XpReason {
+  QUEST_COMPLETION
+  BONUS
+  ADMIN_ADJUSTMENT
+}
+
+enum SeasonStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  WITHDRAWN
+  COMPLETED
+}
+
+enum BadgeCategory {
+  SKILLS
+  STREAKS
+  SEASONS
+  COMMUNITY
+}
+
+enum BadgeRuleType {
+  FIRST_QUEST
+  STREAK_DAYS
+  SKILL_QUEST_COUNT
+  TIMED_QUESTS
+  CLASS_COMPLETION
+  SEASON_TOP_RANK
+  FRIEND_COUNT
+  HINTLESS_COMPLETIONS
+  TIME_OF_DAY
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+enum NotificationType {
+  STREAK
+  QUEST
+  LEADERBOARD
+}
+
+enum InventoryItem {
+  STREAK_FREEZE
+}
+
+enum LeaderboardScope {
+  GLOBAL
+  CLASSROOM
+  FRIENDS
+}
+
+model Student {
+  id                    String   @id @default(cuid())
+  email                 String   @unique @db.VarChar(254)
+  username              String   @unique @db.VarChar(18)
+  displayName           String?  @db.VarChar(80)
+  avatar                String   @default("🦊") @db.VarChar(16)
+  timezone              String   @default("America/New_York") @db.VarChar(64)
+  preferredReminderTime DateTime? @db.Time(0)
+  emailVerifiedAt       DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  ownedSkills            Skill[]                    @relation("CustomSkillOwner")
+  skills                 StudentSkill[]
+  dailyQuestAssignments  DailyQuestAssignment[]
+  questAttempts          QuestAttempt[]
+  xpTransactions         XpTransaction[]
+  classEnrollments       ClassEnrollment[]
+  badgeAwards            StudentBadge[]
+  pinnedBadges           PinnedBadge[]
+  friendshipRequests     FriendRelationship[]       @relation("FriendRequester")
+  friendshipsAsLow       FriendRelationship[]       @relation("FriendLowStudent")
+  friendshipsAsHigh      FriendRelationship[]       @relation("FriendHighStudent")
+  notificationPreferences NotificationPreference[]
+  inventoryTransactions InventoryTransaction[]
+  lessonProgress         StudentLessonProgress[]
+  leaderboardEntries    LeaderboardEntry[]
+  ownedLeaderboards     LeaderboardPeriod[]         @relation("FriendsLeaderboardOwner")
+
+  @@index([createdAt])
+}
+
+model Skill {
+  id            String  @id @default(cuid())
+  name          String  @db.VarChar(60)
+  normalizedName String @db.VarChar(60)
+  icon          String  @default("✨") @db.VarChar(16)
+  ownerStudentId String?
+  owner          Student? @relation("CustomSkillOwner", fields: [ownerStudentId], references: [id], onDelete: Cascade)
+
+  students     StudentSkill[]
+  quests       Quest[]
+  classrooms   Classroom[]
+  badges       Badge[]        @relation("BadgeSkill")
+  learningPaths LearningPath[]
+
+  @@unique([ownerStudentId, normalizedName])
+  @@index([name])
+}
+
+model StudentSkill {
+  studentId String
+  skillId   String
+  selectedAt DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, skillId])
+  @@index([skillId])
+}
+
+model Quest {
+  id                String     @id @default(cuid())
+  title             String     @db.VarChar(160)
+  skillId           String
+  level             QuestLevel
+  xpReward          Int
+  estimatedMinutes  Int
+  timeLimitSeconds  Int?
+  prompt            String     @db.Text
+  story              String     @db.Text
+  speakerName        String     @db.VarChar(100)
+  speakerAvatar      String     @db.VarChar(16)
+  speakerRole        String     @db.VarChar(100)
+  hint               String     @db.Text
+  codeTemplate       String[]
+  badgeId            String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  skill          Skill                 @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  badge          Badge?                @relation("QuestRewardBadge", fields: [badgeId], references: [id], onDelete: SetNull)
+  concepts       QuestConcept[]
+  blanks         QuestBlank[]
+  tests          QuestTest[]
+  pathLessons    PathLesson[]
+  dailyAssignments DailyQuestAssignment[]
+  attempts       QuestAttempt[]
+  classQuests    ClassQuest[]
+
+  @@index([skillId, level])
+}
+
+model QuestConcept {
+  id       String @id @default(cuid())
+  questId  String
+  name     String @db.VarChar(100)
+  position Int
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, position])
+  @@unique([questId, name])
+}
+
+model QuestBlank {
+  id       String @id @default(cuid())
+  questId  String
+  position Int
+
+  quest   Quest          @relation(fields: [questId], references: [id], onDelete: Cascade)
+  answers QuestAnswer[]
+  attemptAnswers QuestAttemptAnswer[]
+
+  @@unique([questId, position])
+}
+
+model QuestAnswer {
+  id         String @id @default(cuid())
+  blankId    String
+  value      String @db.VarChar(200)
+  normalizedValue String @db.VarChar(200)
+
+  blank QuestBlank @relation(fields: [blankId], references: [id], onDelete: Cascade)
+
+  @@unique([blankId, normalizedValue])
+}
+
+model QuestTest {
+  id          String @id @default(cuid())
+  questId     String
+  description String @db.VarChar(200)
+  position    Int
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, position])
+}
+
+model DailyQuestAssignment {
+  id           String   @id @default(cuid())
+  studentId    String
+  questId      String
+  activityDate DateTime @db.Date
+  position     Int
+  assignedAt   DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quest   Quest   @relation(fields: [questId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, activityDate, position])
+  @@unique([studentId, activityDate, questId])
+  @@index([activityDate, studentId])
+}
+
+model QuestAttempt {
+  id                String        @id @default(cuid())
+  studentId         String
+  questId           String
+  status            AttemptStatus @default(IN_PROGRESS)
+  startedAt         DateTime      @default(now())
+  completedAt       DateTime?
+  durationSeconds   Int?
+  hintUsed          Boolean       @default(false)
+  answers           QuestAttemptAnswer[]
+  xpTransaction     XpTransaction?
+  classCompletion   ClassQuestCompletion?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  quest   Quest   @relation(fields: [questId], references: [id], onDelete: Restrict)
+
+  @@index([studentId, startedAt])
+  @@index([questId, status])
+}
+
+model QuestAttemptAnswer {
+  id        String  @id @default(cuid())
+  attemptId String
+  blankId   String
+  value     String  @db.VarChar(200)
+  isCorrect Boolean
+  answeredAt DateTime @default(now())
+
+  attempt QuestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  blank   QuestBlank   @relation(fields: [blankId], references: [id], onDelete: Restrict)
+
+  @@index([attemptId])
+}
+
+model XpTransaction {
+  id               String   @id @default(cuid())
+  studentId        String
+  amount           Int
+  reason           XpReason
+  questAttemptId   String?  @unique
+  classEnrollmentId String?
+  occurredAt       DateTime @default(now())
+
+  student        Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  questAttempt   QuestAttempt?   @relation(fields: [questAttemptId], references: [id], onDelete: Restrict)
+  classEnrollment ClassEnrollment? @relation(fields: [classEnrollmentId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, occurredAt])
+  @@index([classEnrollmentId, occurredAt])
+}
+
+model Season {
+  id        String       @id @default(cuid())
+  name      String       @db.VarChar(80)
+  startsAt  DateTime
+  endsAt    DateTime
+  status    SeasonStatus @default(UPCOMING)
+  createdAt DateTime     @default(now())
+
+  offerings ClassroomOffering[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model Classroom {
+  id          String  @id @default(cuid())
+  name        String  @db.VarChar(120)
+  skillId     String
+  level       CourseLevel
+  description String? @db.Text
+  icon        String  @db.VarChar(16)
+  createdAt   DateTime @default(now())
+
+  skill     Skill               @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  offerings ClassroomOffering[]
+
+  @@index([skillId, level])
+}
+
+model ClassroomOffering {
+  id          String   @id @default(cuid())
+  classroomId String
+  seasonId    String
+  createdAt   DateTime @default(now())
+
+  classroom          Classroom          @relation(fields: [classroomId], references: [id], onDelete: Restrict)
+  season             Season             @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+  weeks              ClassWeek[]
+  enrollments        ClassEnrollment[]
+  leaderboardPeriods LeaderboardPeriod[]
+
+  @@unique([classroomId, seasonId])
+  @@index([seasonId])
+}
+
+model ClassWeek {
+  id          String   @id @default(cuid())
+  offeringId  String
+  weekNumber  Int
+  topic       String   @db.VarChar(120)
+  instructorMessage String? @db.Text
+  startsAt    DateTime
+  endsAt      DateTime
+
+  offering ClassroomOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  quests   ClassQuest[]
+
+  @@unique([offeringId, weekNumber])
+  @@index([startsAt, endsAt])
+}
+
+model ClassQuest {
+  id       String   @id @default(cuid())
+  weekId   String
+  questId  String
+  position Int
+  dueAt    DateTime?
+
+  week        ClassWeek              @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  quest       Quest                  @relation(fields: [questId], references: [id], onDelete: Restrict)
+  completions ClassQuestCompletion[]
+
+  @@unique([weekId, position])
+  @@unique([weekId, questId])
+}
+
+model ClassEnrollment {
+  id         String           @id @default(cuid())
+  studentId  String
+  offeringId String
+  status     EnrollmentStatus @default(ACTIVE)
+  joinedAt   DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  student            Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  offering           ClassroomOffering      @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+  completions        ClassQuestCompletion[]
+  xpTransactions     XpTransaction[]
+
+  @@unique([studentId, offeringId])
+  @@index([offeringId, status])
+}
+
+model ClassQuestCompletion {
+  id                String   @id @default(cuid())
+  enrollmentId      String
+  classQuestId      String
+  questAttemptId    String   @unique
+  completedAt       DateTime @default(now())
+
+  enrollment   ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  classQuest   ClassQuest      @relation(fields: [classQuestId], references: [id], onDelete: Restrict)
+  questAttempt QuestAttempt    @relation(fields: [questAttemptId], references: [id], onDelete: Restrict)
+
+  @@unique([enrollmentId, classQuestId])
+  @@index([classQuestId, completedAt])
+}
+
+model Badge {
+  id            String        @id @default(cuid())
+  name          String        @db.VarChar(120)
+  icon          String        @db.VarChar(16)
+  category      BadgeCategory
+  slug          String        @unique @db.VarChar(40)
+  description   String        @db.Text
+  ruleType      BadgeRuleType
+  ruleTarget    Int?
+  ruleConfig    Json?
+  skillId       String?
+  createdAt     DateTime      @default(now())
+
+  skill         Skill?        @relation("BadgeSkill", fields: [skillId], references: [id], onDelete: SetNull)
+  questRewards  Quest[]       @relation("QuestRewardBadge")
+  awards        StudentBadge[]
+
+  @@index([category])
+}
+
+model StudentBadge {
+  id           String   @id @default(cuid())
+  studentId    String
+  badgeId      String
+  earnedAt     DateTime @default(now())
+  credentialId String   @unique @default(cuid()) @db.VarChar(32)
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  badge   Badge   @relation(fields: [badgeId], references: [id], onDelete: Restrict)
+  pin     PinnedBadge?
+
+  @@unique([studentId, badgeId])
+  @@index([studentId, earnedAt])
+}
+
+model PinnedBadge {
+  studentId    String
+  studentBadgeId String @unique
+  position     Int
+
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentBadge StudentBadge @relation(fields: [studentBadgeId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, position])
+  @@unique([studentId, studentBadgeId])
+}
+
+model FriendRelationship {
+  id            String           @id @default(cuid())
+  lowStudentId  String
+  highStudentId String
+  requestedById String
+  status        FriendshipStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  respondedAt   DateTime?
+
+  lowStudent  Student @relation("FriendLowStudent", fields: [lowStudentId], references: [id], onDelete: Cascade)
+  highStudent Student @relation("FriendHighStudent", fields: [highStudentId], references: [id], onDelete: Cascade)
+  requestedBy Student @relation("FriendRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+
+  @@unique([lowStudentId, highStudentId])
+  @@index([requestedById, status])
+}
+
+model NotificationPreference {
+  studentId String
+  type      NotificationType
+  enabled   Boolean          @default(true)
+  updatedAt DateTime         @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, type])
+}
+
+model InventoryTransaction {
+  id         String        @id @default(cuid())
+  studentId  String
+  item       InventoryItem
+  delta      Int
+  reason     String        @db.VarChar(120)
+  occurredAt DateTime      @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, item, occurredAt])
+}
+
+model LearningPath {
+  id        String   @id @default(cuid())
+  skillId   String
+  name      String   @db.VarChar(120)
+  createdAt DateTime @default(now())
+
+  skill   Skill        @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  lessons PathLesson[]
+
+  @@unique([skillId, name])
+}
+
+model PathLesson {
+  id          String @id @default(cuid())
+  learningPathId String
+  title          String @db.VarChar(160)
+  position       Int
+  questId        String?
+
+  learningPath LearningPath              @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  quest        Quest?                    @relation(fields: [questId], references: [id], onDelete: SetNull)
+  progress     StudentLessonProgress[]
+
+  @@unique([learningPathId, position])
+}
+
+model StudentLessonProgress {
+  studentId   String
+  lessonId    String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson  PathLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, lessonId])
+}
+
+model LeaderboardPeriod {
+  id              String           @id @default(cuid())
+  scope           LeaderboardScope
+  startsAt        DateTime
+  endsAt          DateTime
+  offeringId      String?
+  ownerStudentId  String?
+  createdAt       DateTime         @default(now())
+
+  offering     ClassroomOffering? @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  ownerStudent Student?           @relation("FriendsLeaderboardOwner", fields: [ownerStudentId], references: [id], onDelete: Cascade)
+  entries      LeaderboardEntry[]
+
+  @@index([scope, startsAt, endsAt])
+  @@index([offeringId])
+  @@index([ownerStudentId])
+}
+
+model LeaderboardEntry {
+  id          String @id @default(cuid())
+  periodId    String
+  studentId   String
+  points      Int
+  rank        Int
+
+  period  LeaderboardPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  student Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([periodId, studentId])
+  @@unique([periodId, rank])
+  @@index([periodId, points])
+}
