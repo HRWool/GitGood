@@ -34,4 +34,9 @@ export default [
     files: ["tests/**/*.js"],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    // Prisma utilities run directly in Node.
+    files: ["prisma/**/*.js"],
+    languageOptions: { globals: { ...globals.node } },
+  },
 ];
