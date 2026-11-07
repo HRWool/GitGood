@@ -1,1 +1,15 @@
 node_modules/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+
+# Private keys
+*.pem
+*.key
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3

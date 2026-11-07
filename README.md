@@ -68,6 +68,9 @@ Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 - `tests/`: unit tests that use Node's built-in test runner
 - `eslint.config.mjs`: lint rules for `js/` and the inline scripts in every page
 
+### Local PostgreSQL setup
+For the reproducible PostgreSQL schema, sample data, pgAdmin setup, team verification table, and credential-safety checks, see [docs/database-setup.md](docs/database-setup.md). The current browser prototype still uses `localStorage`; it does not connect to PostgreSQL.
+
 ### Data model
 There's no backend yet. These objects in `js/data.js` are what a future API would return:
 - **Student state** (`DEFAULT_STATE` / `FRESH_STATE`): name, username, UNCC email, avatar, `skills`, `xp`, `streak`, `week`, `freezes`, earned and pinned badges, quests done today, joined classroom, notification prefs, and friends. `js/app.js` saves it in localStorage.
