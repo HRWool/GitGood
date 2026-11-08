@@ -68,8 +68,7 @@ Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 - `tests/`: unit tests that use Node's built-in test runner
 - `eslint.config.mjs`: lint rules for `js/` and the inline scripts in every page
 
-### Local PostgreSQL setup
-For the reproducible PostgreSQL schema, sample data, pgAdmin setup, team verification table, and credential-safety checks, see [docs/database-setup.md](docs/database-setup.md). The current browser prototype still uses `localStorage`; it does not connect to PostgreSQL.
+
 
 ### Data model
 There's no backend yet. The clickable prototype stores progress in localStorage. The PostgreSQL/Prisma starting schema is in [`prisma/schema.prisma`](prisma/schema.prisma); it models the persistent entities and relationships a future backend would need. These objects in `js/data.js` are the current simulated data:
@@ -101,7 +100,7 @@ npm install
 
 The clickable prototype still uses `localStorage`; this setup initializes the Prisma schema and sample data for local development.
 
-1. Install PostgreSQL and create a local database named `gitgood`.
+1. Follow [docs/database-setup.md](docs/database-setup.md) to create the gitgood_app role and the gitgood database.
 2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your local PostgreSQL connection string. Keep `.env` private; it is ignored by Git.
 3. Install dependencies with `npm install`, then run:
 
