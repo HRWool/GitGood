@@ -16,7 +16,7 @@ There are many ways to run a stand up, however most teams use the following form
 
 ## Team Name - Group 7 (Git Good)
 
-## Sprint Name - Sprint 1
+## Sprint Name - Sprint 2
 
 ## Stand Up Date - ____________
 
