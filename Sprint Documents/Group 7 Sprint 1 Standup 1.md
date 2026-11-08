@@ -18,36 +18,45 @@ There are many ways to run a stand up, however most teams use the following form
 
 ## Sprint Name - Sprint 1
 
-## Stand Up Date - 11/5/2026
+## Stand Up Date - ____________
 
 *If a team member is absent, list them as absent. If they have a valid reason, like an illness, they should contact the TAs and/or instructor so they do not lose points for this stand up.*
 
 ### Update for AJ Blocker
 
-1. What have I accomplished - Used VSCode copilot to declutter the prototypes’ UI and created an issue for filtering practice questions.
-2. What will I accomplish - Part 3 and 4 of Sprint 2
-3. What blockers do I have - As I’m doing part 3 of the Sprint, trying to see how to implement part 2 with team collaboration so everyone is connected and configured to firebase. Everyone has to create their firebase database account to be allowed for configuration.
+1. What have I accomplished -
+2. What will I accomplish -
+3. What blockers do I have -
 
 ### Update for Athena Deese
 
-1. What have I accomplished - Creating the friend invite system, adding to the README
-2. What will I accomplish - Part 5 and 6 of Sprint 2
-3. What blockers do I have - Everyone before me needs to finish first so that I can implement features.
+1. What have I accomplished -
+2. What will I accomplish -
+3. What blockers do I have -
 
 ### Update for Heidi Wooldridge
 
-1. What have I accomplished - Established the application on GitHub with full group connectivity and accessibility. Created a project page and work flow boards.
-2. What will I accomplish - Part 7 and 8 of Sprint 2
-3. What blockers do I have - Everyone else finishing their part 1st. Find an automated testing framework appropriate for the application.
+1. What have I accomplished -
+2. What will I accomplish -
+3. What blockers do I have -
 
 ### Update for Idol Hunter
 
 1. What have I accomplished -
-2. What will I accomplish - Part 1 and 2 of Sprint 2
+2. What will I accomplish -
 3. What blockers do I have -
 
 ### Blockers
 
 After everyone gives updates, discuss and write down what your team will do to alleviate any blockers that came up in the meeting.
 
-The main blocker is the linear workflow of this sprint that blocks people from getting things done until the previous person finishes their part.
+&nbsp;
+
+### Board status changes since the last stand up
+
+*Optional, for our scrum evidence: log each issue that moved on the GitHub Project board and who moved it.*
+
+| Issue # | From → To | Moved by | Linked commit or PR |
+| :-- | :-- | :-- | :-- |
+| &nbsp; | | | |
+| &nbsp; | | | |
