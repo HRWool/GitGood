@@ -1,0 +1,53 @@
+@startuml
+title Start an Assignment or Quiz — Persistent Interaction
+autonumber
+skinparam linetype ortho
+
+actor Student
+boundary "Application Interface" as UI
+control "Quest Service\n(application logic)" as Service
+entity "Prisma Client\n(ORM / data access)" as ORM
+database "PostgreSQL" as DB
+
+note over Student, DB
+  Selected user story: "As a student, I want to be able to start new assignments or quizzes."
+  This is a target-state interaction based on the Prisma schema;
+  the current clickable prototype has no backend.
+end note
+
+Student -> UI : Select a quest and press Start
+UI -> Service : startQuest(studentId, questId)
+activate Service
+
+Service -> ORM : student.findUnique(studentId)\nquest.findUnique(questId)
+activate ORM
+ORM -> DB : SELECT Student and Quest
+activate DB
+DB --> ORM : Student and Quest records
+deactivate DB
+ORM --> Service : Student and Quest
+deactivate ORM
+
+alt student and quest exist
+  Service -> ORM : questAttempt.create(\nstudentId, questId,\nstatus = IN_PROGRESS)
+  activate ORM
+  ORM -> DB : INSERT QuestAttempt
+  activate DB
+  DB --> ORM : created attempt (id, startedAt, status)
+  deactivate DB
+  ORM --> Service : QuestAttempt
+  deactivate ORM
+  Service --> UI : attempt and quest content
+  UI --> Student : Display the assignment
+else student or quest not found
+  Service --> UI : Not found error
+  UI --> Student : Show an error; do not start the quiz
+end
+deactivate Service
+
+note right of DB
+  QuestAttempt references Student and Quest.
+  status defaults to IN_PROGRESS;
+  startedAt defaults to now().
+end note
+@enduml

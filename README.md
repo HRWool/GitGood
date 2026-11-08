@@ -68,18 +68,21 @@ Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 - `tests/`: unit tests that use Node's built-in test runner
 - `eslint.config.mjs`: lint rules for `js/` and the inline scripts in every page
 
-### Local PostgreSQL setup
-For the reproducible PostgreSQL schema, sample data, pgAdmin setup, team verification table, and credential-safety checks, see [docs/database-setup.md](docs/database-setup.md). The current browser prototype still uses `localStorage`; it does not connect to PostgreSQL.
+
 
 ### Data model
-There's no backend yet. These objects in `js/data.js` are what a future API would return:
+There's no backend yet. The clickable prototype stores progress in localStorage. The PostgreSQL/Prisma starting schema is in [`prisma/schema.prisma`](prisma/schema.prisma); it models the persistent entities and relationships a future backend would need. These objects in `js/data.js` are the current simulated data:
 - **Student state** (`DEFAULT_STATE` / `FRESH_STATE`): name, username, UNCC email, avatar, `skills`, `xp`, `streak`, `week`, `freezes`, earned and pinned badges, quests done today, joined classroom, notification prefs, and friends. `js/app.js` saves it in localStorage.
 - **Quest** (`QUESTS`): title, `skill`, level, XP, minutes, `practiced` concepts, customer story, code with blanks, accepted answers, tests and a hint. `DAILY` lists the daily quests.
 - **Badge** (`BADGES`): id, name, icon, type, requirement, and a `goal`/`have` count for progress badges.
 - **Classroom** (`CLASSES`) and leaderboards (`LB_APP`, `LB_CLASS`, `LB_FRIENDS`).
 
+XP totals, streaks, ranks, and badge progress are intended to be derived from dated activity and transaction records rather than stored as independent counters. The schema provides relations and uniqueness constraints; domain checks that span multiple rows (such as the three-quest daily limit, badge pin limit, friendship-pair ordering, valid classroom completion, and nonnegative inventory balances) must be enforced transactionally by the future backend. Normalize emails, usernames, and custom skill names before writes. Learning paths and leaderboard snapshots are included as schema support for the screens' existing previews.
+
+UML documentation: [domain class diagram](docs/uml/class-diagram.svg) ([PlantUML source](docs/uml/class-diagram.puml)) and [start-quiz sequence diagram](docs/uml/sequence-start-quiz.svg) ([PlantUML source](docs/uml/sequence-start-quiz.puml)). The sequence shows a future backend interaction; the prototype does not currently persist to Prisma.
+
 ## Run it locally
-You need a web browser and Python 3 to serve the site. Node.js 18+ is only needed for linting and tests.
+You need a web browser and Python 3 to serve the site. Node.js 18+ is needed for linting, tests, and optional Prisma setup.
 
 ```bash
 git clone https://github.com/HRWool/GitGood.git
@@ -88,10 +91,24 @@ python3 -m http.server 8000     # or: npm start
 ```
 Then open http://localhost:8000. Nothing else needs installing to run the app.
 
-To install the dev tools (ESLint) for linting:
+Install the project tools:
 ```bash
 npm install
 ```
+
+### Optional local PostgreSQL database
+
+The clickable prototype still uses `localStorage`; this setup initializes the Prisma schema and sample data for local development.
+
+1. Follow [docs/database-setup.md](docs/database-setup.md) to create the gitgood_app role and the gitgood database.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your local PostgreSQL connection string. Keep `.env` private; it is ignored by Git.
+3. Install dependencies with `npm install`, then run:
+
+```bash
+npm run db:setup
+```
+
+This generates Prisma Client, applies development migrations, seeds an example student/skill/quest, and verifies a database query. The seed command refuses to run unless the database is named `gitgood` and hosted on localhost. Individual commands are `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, and `npm run db:check`.
 
 ## Implemented features (Sprint 1)
 | Issue | Feature | Pull request |

@@ -8,7 +8,7 @@ import globals from "globals";
 // Globals defined in js/data.js and js/app.js and shared by every page.
 const shared = Object.fromEntries(
   ["SKILLS", "AVATARS", "DEFAULT_STATE", "FRESH_STATE", "BADGES", "QUESTS", "DAILY",
-    "CLASSES", "LB_APP", "LB_CLASS", "LB_FRIENDS", "FEED", "PAGES", "GG", "dailyQuestsFor"]
+    "CLASSES", "LB_APP", "LB_CLASS", "LB_FRIENDS", "FEED", "PAGES", "GG", "dailyQuestsFor", "answerIsAccepted"]
     .map((name) => [name, "readonly"])
 );
 
@@ -32,6 +32,11 @@ export default [
   {
     // Unit tests run in Node, not the browser.
     files: ["tests/**/*.js"],
+    languageOptions: { globals: { ...globals.node } },
+  },
+  {
+    // Prisma utilities run directly in Node.
+    files: ["prisma/**/*.js"],
     languageOptions: { globals: { ...globals.node } },
   },
 ];

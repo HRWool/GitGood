@@ -1,0 +1,386 @@
+@startuml
+title Git Good — Domain Class Diagram
+left to right direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "Student and quest progress" {
+  class Student {
+    +id : String <<PK, cuid>>
+    +email : String <<UQ, varchar(254)>>
+    +username : String <<UQ, varchar(18)>>
+    +displayName : String? <<varchar(80)>>
+    +avatar : String <<default>>
+    +timezone : String <<default>>
+    +preferredReminderTime : DateTime? <<time(0)>>
+    +emailVerifiedAt : DateTime?
+    +createdAt : DateTime
+    +updatedAt : DateTime
+  }
+  class Skill {
+    +id : String <<PK, cuid>>
+    +name : String <<varchar(60)>>
+    +normalizedName : String <<varchar(60)>>
+    +icon : String <<default>>
+    +ownerStudentId : String? <<FK>>
+  }
+  class StudentSkill {
+    +studentId : String <<PK, FK>>
+    +skillId : String <<PK, FK>>
+    +selectedAt : DateTime
+  }
+  class Quest {
+    +id : String <<PK, cuid>>
+    +title : String <<varchar(160)>>
+    +skillId : String <<FK>>
+    +level : QuestLevel
+    +xpReward : Int
+    +estimatedMinutes : Int
+    +timeLimitSeconds : Int?
+    +prompt : String
+    +story : String
+    +speakerName : String
+    +speakerAvatar : String
+    +speakerRole : String
+    +hint : String
+    +codeTemplate : String[]
+    +badgeId : String? <<FK>>
+    +createdAt : DateTime
+    +updatedAt : DateTime
+  }
+  class QuestConcept {
+    +id : String <<PK, cuid>>
+    +questId : String <<FK>>
+    +name : String
+    +position : Int
+  }
+  class QuestBlank {
+    +id : String <<PK, cuid>>
+    +questId : String <<FK>>
+    +position : Int
+  }
+  class QuestAnswer {
+    +id : String <<PK, cuid>>
+    +blankId : String <<FK>>
+    +value : String
+    +normalizedValue : String
+  }
+  class QuestTest {
+    +id : String <<PK, cuid>>
+    +questId : String <<FK>>
+    +description : String
+    +position : Int
+  }
+  class DailyQuestAssignment {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +questId : String <<FK>>
+    +activityDate : DateTime <<date>>
+    +position : Int
+    +assignedAt : DateTime
+  }
+  class QuestAttempt {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +questId : String <<FK>>
+    +status : AttemptStatus
+    +startedAt : DateTime
+    +completedAt : DateTime?
+    +durationSeconds : Int?
+    +hintUsed : Boolean
+  }
+  class QuestAttemptAnswer {
+    +id : String <<PK, cuid>>
+    +attemptId : String <<FK>>
+    +blankId : String <<FK>>
+    +value : String
+    +isCorrect : Boolean
+    +answeredAt : DateTime
+  }
+  class XpTransaction {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +amount : Int
+    +reason : XpReason
+    +questAttemptId : String? <<FK, UQ>>
+    +classEnrollmentId : String? <<FK>>
+    +occurredAt : DateTime
+  }
+}
+
+package "Classes and seasons" {
+  class Season {
+    +id : String <<PK, cuid>>
+    +name : String
+    +startsAt : DateTime
+    +endsAt : DateTime
+    +status : SeasonStatus
+    +createdAt : DateTime
+  }
+  class Classroom {
+    +id : String <<PK, cuid>>
+    +name : String
+    +skillId : String <<FK>>
+    +level : CourseLevel
+    +description : String?
+    +icon : String
+    +createdAt : DateTime
+  }
+  class ClassroomOffering {
+    +id : String <<PK, cuid>>
+    +classroomId : String <<FK>>
+    +seasonId : String <<FK>>
+    +createdAt : DateTime
+  }
+  class ClassWeek {
+    +id : String <<PK, cuid>>
+    +offeringId : String <<FK>>
+    +weekNumber : Int
+    +topic : String
+    +instructorMessage : String?
+    +startsAt : DateTime
+    +endsAt : DateTime
+  }
+  class ClassQuest {
+    +id : String <<PK, cuid>>
+    +weekId : String <<FK>>
+    +questId : String <<FK>>
+    +position : Int
+    +dueAt : DateTime?
+  }
+  class ClassEnrollment {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +offeringId : String <<FK>>
+    +status : EnrollmentStatus
+    +joinedAt : DateTime
+    +updatedAt : DateTime
+  }
+  class ClassQuestCompletion {
+    +id : String <<PK, cuid>>
+    +enrollmentId : String <<FK>>
+    +classQuestId : String <<FK>>
+    +questAttemptId : String <<FK, UQ>>
+    +completedAt : DateTime
+  }
+}
+
+package "Badges and social" {
+  class Badge {
+    +id : String <<PK, cuid>>
+    +name : String
+    +icon : String
+    +category : BadgeCategory
+    +slug : String <<UQ>>
+    +description : String
+    +ruleType : BadgeRuleType
+    +ruleTarget : Int?
+    +ruleConfig : Json?
+    +skillId : String? <<FK>>
+    +createdAt : DateTime
+  }
+  class StudentBadge {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +badgeId : String <<FK>>
+    +earnedAt : DateTime
+    +credentialId : String <<UQ, varchar(32), cuid>>
+  }
+  class PinnedBadge {
+    +studentId : String <<PK, FK>>
+    +studentBadgeId : String <<UQ, FK>>
+    +position : Int <<PK>>
+  }
+  class FriendRelationship {
+    +id : String <<PK, cuid>>
+    +lowStudentId : String <<FK>>
+    +highStudentId : String <<FK>>
+    +requestedById : String <<FK>>
+    +status : FriendshipStatus
+    +createdAt : DateTime
+    +respondedAt : DateTime?
+  }
+  class NotificationPreference {
+    +studentId : String <<PK, FK>>
+    +type : NotificationType <<PK>>
+    +enabled : Boolean
+    +updatedAt : DateTime
+  }
+  class InventoryTransaction {
+    +id : String <<PK, cuid>>
+    +studentId : String <<FK>>
+    +item : InventoryItem
+    +delta : Int
+    +reason : String
+    +occurredAt : DateTime
+  }
+}
+
+package "Learning paths" {
+  class LearningPath {
+    +id : String <<PK, cuid>>
+    +skillId : String <<FK>>
+    +name : String
+    +createdAt : DateTime
+  }
+  class PathLesson {
+    +id : String <<PK, cuid>>
+    +learningPathId : String <<FK>>
+    +title : String
+    +position : Int
+    +questId : String? <<FK>>
+  }
+  class StudentLessonProgress {
+    +studentId : String <<PK, FK>>
+    +lessonId : String <<PK, FK>>
+    +startedAt : DateTime
+    +completedAt : DateTime?
+  }
+}
+
+package "Leaderboards" {
+  class LeaderboardPeriod {
+    +id : String <<PK, cuid>>
+    +scope : LeaderboardScope
+    +startsAt : DateTime
+    +endsAt : DateTime
+    +offeringId : String? <<FK>>
+    +ownerStudentId : String? <<FK>>
+    +createdAt : DateTime
+  }
+  class LeaderboardEntry {
+    +id : String <<PK, cuid>>
+    +periodId : String <<FK>>
+    +studentId : String <<FK>>
+    +points : Int
+    +rank : Int
+  }
+}
+
+enum QuestLevel { EASY; MEDIUM; HARD }
+enum CourseLevel { BEGINNER; INTERMEDIATE; ADVANCED; TIMED }
+enum AttemptStatus { IN_PROGRESS; PASSED; ABANDONED; TIMED_OUT }
+enum XpReason { QUEST_COMPLETION; BONUS; ADMIN_ADJUSTMENT }
+enum SeasonStatus { UPCOMING; ACTIVE; COMPLETED }
+enum EnrollmentStatus { ACTIVE; WITHDRAWN; COMPLETED }
+enum BadgeCategory { SKILLS; STREAKS; SEASONS; COMMUNITY }
+enum BadgeRuleType { FIRST_QUEST; STREAK_DAYS; SKILL_QUEST_COUNT; TIMED_QUESTS; CLASS_COMPLETION; SEASON_TOP_RANK; FRIEND_COUNT; HINTLESS_COMPLETIONS; TIME_OF_DAY }
+enum FriendshipStatus { PENDING; ACCEPTED; DECLINED; BLOCKED }
+enum NotificationType { STREAK; QUEST; LEADERBOARD }
+enum InventoryItem { STREAK_FREEZE }
+enum LeaderboardScope { GLOBAL; CLASSROOM; FRIENDS }
+
+Student "1" -- "0..*" Skill : owns custom skills\n(CustomSkillOwner)
+Student "1" -- "0..*" StudentSkill
+Skill "1" -- "0..*" StudentSkill
+Skill "1" -- "0..*" Quest
+Quest "1" -- "0..*" QuestConcept
+Quest "1" -- "0..*" QuestBlank
+QuestBlank "1" -- "0..*" QuestAnswer
+Quest "1" -- "0..*" QuestTest
+Student "1" -- "0..*" DailyQuestAssignment
+Quest "1" -- "0..*" DailyQuestAssignment
+Student "1" -- "0..*" QuestAttempt
+Quest "1" -- "0..*" QuestAttempt
+QuestAttempt "1" -- "0..*" QuestAttemptAnswer
+QuestBlank "1" -- "0..*" QuestAttemptAnswer
+Student "1" -- "0..*" XpTransaction
+QuestAttempt "0..1" -- "0..1" XpTransaction : questAttempt
+ClassEnrollment "0..1" -- "0..*" XpTransaction
+Skill "1" -- "0..*" Classroom
+Classroom "1" -- "0..*" ClassroomOffering
+Season "1" -- "0..*" ClassroomOffering
+ClassroomOffering "1" -- "0..*" ClassWeek
+ClassWeek "1" -- "0..*" ClassQuest
+Quest "1" -- "0..*" ClassQuest
+Student "1" -- "0..*" ClassEnrollment
+ClassroomOffering "1" -- "0..*" ClassEnrollment
+ClassEnrollment "1" -- "0..*" ClassQuestCompletion
+ClassQuest "1" -- "0..*" ClassQuestCompletion
+QuestAttempt "1" -- "0..1" ClassQuestCompletion
+Badge "0..1" -- "0..*" Quest : reward
+Skill "0..1" -- "0..*" Badge
+Student "1" -- "0..*" StudentBadge
+Badge "1" -- "0..*" StudentBadge
+Student "1" -- "0..*" PinnedBadge
+StudentBadge "1" -- "0..1" PinnedBadge
+Student "1" -- "0..*" FriendRelationship : lowStudent
+Student "1" -- "0..*" FriendRelationship : highStudent
+Student "1" -- "0..*" FriendRelationship : requestedBy
+Student "1" -- "0..*" NotificationPreference
+Student "1" -- "0..*" InventoryTransaction
+Skill "1" -- "0..*" LearningPath
+LearningPath "1" -- "0..*" PathLesson
+Quest "0..1" -- "0..*" PathLesson
+Student "1" -- "0..*" StudentLessonProgress
+PathLesson "1" -- "0..*" StudentLessonProgress
+ClassroomOffering "0..1" -- "0..*" LeaderboardPeriod
+Student "0..1" -- "0..*" LeaderboardPeriod : ownerStudent
+LeaderboardPeriod "1" -- "0..*" LeaderboardEntry
+Student "1" -- "0..*" LeaderboardEntry
+
+note bottom of Student
+  String IDs use cuid(). UQ(email), UQ(username).
+end note
+note bottom of Skill
+  UQ(ownerStudentId, normalizedName); ownerStudentId is nullable.
+end note
+note bottom of DailyQuestAssignment
+  UQ(studentId, activityDate, position);
+  UQ(studentId, activityDate, questId).
+end note
+note bottom of QuestConcept
+  UQ(questId, position); UQ(questId, name).
+end note
+note bottom of QuestBlank
+  UQ(questId, position).
+end note
+note bottom of QuestAnswer
+  UQ(blankId, normalizedValue).
+end note
+note bottom of QuestTest
+  UQ(questId, position).
+end note
+note bottom of ClassroomOffering
+  UQ(classroomId, seasonId).
+end note
+note bottom of ClassWeek
+  UQ(offeringId, weekNumber).
+end note
+note bottom of ClassQuest
+  UQ(weekId, position); UQ(weekId, questId).
+end note
+note bottom of ClassEnrollment
+  UQ(studentId, offeringId).
+end note
+note bottom of ClassQuestCompletion
+  UQ(enrollmentId, classQuestId);
+  UQ(questAttemptId).
+end note
+note bottom of StudentBadge
+  UQ(studentId, badgeId); UQ(credentialId).
+end note
+note bottom of PinnedBadge
+  PK(studentId, position); UQ(studentBadgeId);
+  UQ(studentId, studentBadgeId).
+end note
+note bottom of FriendRelationship
+  UQ(lowStudentId, highStudentId).
+end note
+note bottom of LearningPath
+  UQ(skillId, name).
+end note
+note bottom of PathLesson
+  UQ(learningPathId, position).
+end note
+note bottom of StudentLessonProgress
+  PK(studentId, lessonId).
+end note
+note bottom of LeaderboardEntry
+  UQ(periodId, studentId); UQ(periodId, rank).
+end note
+note "Domain and persistence model from prisma/schema.prisma.\nCuid IDs and uniqueness shown where relevant; FK optionality follows nullable fields." as SchemaNote
+
+@enduml

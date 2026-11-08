@@ -216,7 +216,8 @@ const QUESTS = {
       "    print(i)",
       "print(\"{1}!\")   # what does the sign say at the end?",
     ],
-    answers: [["0"], ["Liftoff", "liftoff", "Go", "go", "Go Niners", "Blastoff", "blastoff"]],
+    answers: [["0"], ["Liftoff"]],
+    acceptAny: [false, true],
     tests: ["Range stops after 1", "Counts down by 1", "Prints a finale"],
     hint: "range() stops BEFORE the end value, so to include 1 you stop at 0. The finale can be anything fun like Liftoff.",
     next: "home.html",
@@ -311,6 +312,11 @@ const QUESTS = {
     next: "home.html",
   },
 };
+
+function answerIsAccepted(accepted, value, acceptAny = false) {
+  const normalized = value.trim().replace(/\s+/g, "");
+  return (acceptAny && normalized.length > 0) || accepted.some((answer) => answer.trim().replace(/\s+/g, "") === normalized);
+}
 
 // Pool of daily quests. Each student only gets the ones that match their skills (see GG.dailyQuests).
 const DAILY = ["daily-py", "daily-web", "daily-git", "daily-java", "daily-sql", "daily-dsa", "daily-cpp", "daily-php"];

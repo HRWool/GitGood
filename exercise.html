@@ -125,11 +125,13 @@
     $("#hint").classList.add("pop-in");
   });
 
-  const norm = (s) => s.trim().replace(/\s+/g, "");
   const MISS = ["So close! Don't fork it up 😅", "Merge conflict! Try again 🔀", "Almost — check the highlighted blank 👀", "Bug spotted 🐛 Give it another go!"];
   function run() {
     if (done) return;
-    const ok = inputs.map((inp) => Q.answers[+inp.dataset.i].some((a) => norm(a) === norm(inp.value)));
+    const ok = inputs.map((inp) => {
+      const i = +inp.dataset.i;
+      return answerIsAccepted(Q.answers[i], inp.value, Q.acceptAny && Q.acceptAny[i]);
+    });
     inputs.forEach((inp, i) => { inp.classList.remove("right", "wrong"); void inp.offsetWidth; inp.classList.add(ok[i] ? "right" : "wrong"); });
     const allOk = ok.every(Boolean);
     const results = Q.tests.map((_, i) => (i < ok.length ? ok[i] : allOk));

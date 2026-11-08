@@ -4,7 +4,12 @@
   "scripts": {
     "lint": "eslint . --max-warnings=0",
     "start": "python3 -m http.server 8000",
-    "test": "node --test \"tests/*.test.js\""
+    "test": "node --test \"tests/*.test.js\"",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node prisma/seed.js",
+    "db:check": "node prisma/check-connection.js",
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed && npm run db:check"
   },
   "repository": {
     "type": "git",
@@ -18,7 +23,11 @@
   "devDependencies": {
     "eslint": "^9.39.5",
     "eslint-plugin-html": "^8.2.1",
-    "globals": "^15.15.0"
+    "globals": "^15.15.0",
+    "prisma": "^6.19.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
   },
   "private": true,
   "version": "1.0.0"
