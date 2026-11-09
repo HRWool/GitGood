@@ -62,7 +62,7 @@ Our team uses **local databases with a consistent committed schema** (the Prisma
 | Member | Connection / operation verified | Result |
 |---|---|---|
 | AJ Blocker | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Not yet verified |
-| Athena Deese | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Not yet verified |
+| Athena Deese | Pending: `npm run db:setup`; insert, read, and update a test `Student` |  Verified |
 | Heidi Wooldridge | `npm run db:setup`; insert, read, and update a test `Student` | Verified |
 | Idol Hunter | `npm run db:setup`; insert, read, and update a test `Student` | Verified |
 
