@@ -63,8 +63,8 @@ Our team uses **local databases with a consistent committed schema** (the Prisma
 |---|---|---|
 | AJ Blocker | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Not yet verified |
 | Athena Deese | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Not yet verified |
-| Heidi Wooldridge | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Not yet verified |
-| Idol Hunter | Pending: `npm run db:setup`; insert, read, and update a test `Student` | Verified |
+| Heidi Wooldridge | `npm run db:setup`; insert, read, and update a test `Student` | Verified |
+| Idol Hunter | `npm run db:setup`; insert, read, and update a test `Student` | Verified |
 
 Test operation (run in pgAdmin's Query Tool on `gitgood`; replace `yourname` with your own name). Prisma generates `id` and `updatedAt` in application code, so plain SQL has to supply them:
 
