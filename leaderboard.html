@@ -26,8 +26,8 @@
   <div class="content" id="content"></div>
 </div></div></div>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, $$, state } = GG;
   const params = new URLSearchParams(location.search);
@@ -38,7 +38,7 @@
   function rowHTML(r, extra = "") {
     return `<div class="lb-row ${r.me ? "me" : ""} ${extra}">
       <span class="rk">${r.rank}</span>${GG.avatarHTML(r.av, "sm")}
-      <span class="nm">${r.me ? `You <small>@${state.username} · 🔥 ${state.streak}</small>` : r.name}</span>
+      <span class="nm">${r.me ? `${GG.displayName()} <small>@${state.username} · 🔥 ${state.streak}</small>` : r.name}</span>
       <span class="xp">${r.xp.toLocaleString()} XP</span></div>`;
   }
 
@@ -69,9 +69,9 @@
         </div></div>`);
     }
 
-    const top = rows.slice(0, 3);
+    const topRows = rows.slice(0, 3);
     parts.push(`<div class="card" style="padding-bottom:0;overflow:hidden">
-      <div class="podium">${[1, 0, 2].map((i) => { const r = top[i]; if (!r) return "<div></div>"; return `<div class="p p${i + 1}">${i === 0 ? `<span class="crown">👑</span>` : ""}<span class="avatar ${i === 0 ? "lg" : ""}">${r.av}</span><span>${r.me ? "You" : r.name.split(" ")[0]}</span><span class="tiny muted">${r.xp.toLocaleString()} XP</span><div class="block">${i + 1}</div></div>`; }).join("")}</div></div>`);
+      <div class="podium">${[1, 0, 2].map((i) => { const r = topRows[i]; if (!r) return "<div></div>"; return `<div class="p p${i + 1}">${i === 0 ? `<span class="crown">👑</span>` : ""}<span class="avatar ${i === 0 ? "lg" : ""}">${r.av}</span><span>${r.me ? GG.displayName() : r.name.split(" ")[0]}</span><span class="tiny muted">${r.xp.toLocaleString()} XP</span><div class="block">${i + 1}</div></div>`; }).join("")}</div></div>`);
 
     // List centered on your row: neighbors are more motivating than leaders.
     const start = Math.max(3, me.rank - 3), end = Math.min(rows.length, me.rank + 2);

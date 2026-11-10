@@ -34,8 +34,8 @@
   <div class="content" id="content"></div>
 </div></div></div>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, state } = GG;
   const lvl = GG.level();
@@ -108,7 +108,7 @@
   parts.push(`<details class="dashboard-details dashboard-explore card rise">
     <summary><span>Explore more</span><span class="dashboard-toggle" aria-hidden="true"></span></summary>
     <div class="dashboard-explore-content">
-      <a class="dashboard-explore-link" href="profile.html#path"><span class="dashboard-explore-icon">🧭</span><span class="grow"><b>Learning path · Python</b><small>9 of 15 lessons · Continue with Loops</small></span><span aria-hidden="true">›</span></a>
+      <a class="dashboard-explore-link" href="profile.html#path"><span class="dashboard-explore-icon">🧭</span><span class="grow"><b>Learning path · ${state.skills[0] || "Python"}</b><small>Continue your personalized path</small></span><span aria-hidden="true">›</span></a>
       ${cls ? `<a class="dashboard-explore-link" href="class.html?c=${cls.id}"><span class="dashboard-explore-icon">🎓</span><span class="grow"><b>${cls.name}</b><small>${cls.topic} · ${state.classDone.length} of 3 quests</small></span><span aria-hidden="true">›</span></a>` : `<a class="dashboard-explore-link" href="classes.html"><span class="dashboard-explore-icon">🎓</span><span class="grow"><b>Join a seasonal classroom</b><small>Get a class recommendation based on your skills</small></span><span aria-hidden="true">›</span></a>`}
       <a class="dashboard-explore-link" href="leaderboard.html"><span class="dashboard-explore-icon">🏆</span><span class="grow"><b>Leaderboard · #${me.rank} this week</b><small>${above ? `${above.xp - state.xp} XP to pass ${above.name.split(" ")[0]}` : "You're on top!"}</small></span><span aria-hidden="true">›</span></a>
       <div class="dashboard-community">

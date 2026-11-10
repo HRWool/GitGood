@@ -16,6 +16,7 @@ const AVATARS = ["🦊", "🐢", "🦉", "🐙", "🐝", "🦖", "🐧", "🐲"]
 // Week-in "Maya" — used whenever someone jumps straight into the app without onboarding.
 const DEFAULT_STATE = {
   onboarded: true,
+  fresh: false,
   name: "Maya Chen",
   username: "maya_codes",
   email: "mchen42@charlotte.edu",
@@ -24,6 +25,7 @@ const DEFAULT_STATE = {
   xp: 520,
   classXp: 585,
   streak: 6,
+  bestStreak: 9,
   week: [1, 1, 1, 1, 1, 1, 0], // Mon..Sun, today = Sun
   freezes: 1,
   earned: ["hello-world", "streak-3", "python-1", "night-owl", "class-act", "streak-7"],
@@ -37,8 +39,14 @@ const DEFAULT_STATE = {
   doneToday: ["daily-web"],
   classDone: ["class-for"],
   questsTotal: 23,
+  badgeProgress: {
+    "python-2": 14, "java-1": 6, "speed-runner": 4,
+    "web-1": 3, "git-1": 0, "bug-squasher": 3, "early-bird": 0, helper: 2,
+  },
   joinedClass: "python",
   prefs: { streak: true, quest: true, leaderboard: false },
+  friends: { invites: [], accepted: [], pending: [] },
+  lastRankMove: null,
 };
 
 // Brand-new account created by the sign-up flow.
@@ -52,6 +60,7 @@ const FRESH_STATE = {
   xp: 0,
   classXp: 0,
   streak: 0,
+  bestStreak: 0,
   week: [0, 0, 0, 0, 0, 0, 0],
   freezes: 0,
   earned: [],
@@ -62,28 +71,34 @@ const FRESH_STATE = {
   doneToday: [],
   classDone: [],
   questsTotal: 0,
+  badgeProgress: {
+    "python-2": 0, "java-1": 0, "speed-runner": 0,
+    "web-1": 0, "git-1": 0, "bug-squasher": 0, "early-bird": 0, helper: 0,
+  },
   joinedClass: null,
   fresh: true,
   prefs: { streak: true, quest: true, leaderboard: false },
+  friends: { invites: [], accepted: [], pending: [] },
+  lastRankMove: null,
 };
 
 const BADGES = [
-  { id: "hello-world", name: "Hello, World", icon: "👋", type: "Skills", slug: "h3lo", req: "Finish your very first quest." },
-  { id: "streak-3", name: "On Fire", icon: "🔥", type: "Streaks", slug: "f1r3", req: "Practice 3 days in a row." },
-  { id: "streak-7", name: "7-Day Streak", icon: "⚡", type: "Streaks", slug: "7f3k", req: "Practice 7 days in a row." },
-  { id: "streak-30", name: "30-Day Streak", icon: "🌋", type: "Streaks", slug: "v30x", req: "Practice 30 days in a row.", goal: 30, track: "streak" },
-  { id: "python-1", name: "Python Lvl 1", icon: "🐍", type: "Skills", slug: "py01", req: "Complete 10 Python quests." },
-  { id: "python-2", name: "Python Lvl 2", icon: "🐍", type: "Skills", slug: "py02", req: "Complete 25 Python quests.", goal: 25, have: 14 },
-  { id: "java-1", name: "Java Lvl 1", icon: "☕", type: "Skills", slug: "jv01", req: "Complete 10 Java quests.", goal: 10, have: 6 },
-  { id: "speed-runner", name: "Speed Runner", icon: "⏱️", type: "Skills", slug: "sp33", req: "Beat the clock on 5 timed quests.", goal: 5, have: 4 },
-  { id: "web-1", name: "Web Weaver", icon: "🕸️", type: "Skills", slug: "wb01", req: "Complete 8 Web quests.", goal: 8, have: 3 },
-  { id: "git-1", name: "Merge Master", icon: "🔀", type: "Skills", slug: "gt01", req: "Complete the Git & Command Line class.", goal: 6, have: 0 },
-  { id: "night-owl", name: "Night Owl", icon: "🦉", type: "Streaks", slug: "n1gh", req: "Finish a quest after 10 PM." },
-  { id: "class-act", name: "Class Act", icon: "🎓", type: "Seasons", slug: "c1as", req: "Join your first classroom." },
-  { id: "season-top3", name: "Season 1 · Top 3", icon: "🏆", type: "Seasons", slug: "s1t3", req: "Finish a classroom season in the top 3." },
-  { id: "bug-squasher", name: "Bug Squasher", icon: "🐛", type: "Skills", slug: "bg10", req: "Pass 10 quests without using a hint.", goal: 10, have: 3 },
-  { id: "early-bird", name: "Early Bird", icon: "🌅", type: "Streaks", slug: "e4rl", req: "Finish a quest before 8 AM.", goal: 1, have: 0 },
-  { id: "helper", name: "Study Buddy", icon: "🤝", type: "Seasons", slug: "p41r", req: "Add 3 friends to your leaderboard.", goal: 3, have: 2 },
+  { id: "hello-world", name: "Hello, World", icon: "👋", type: "Skills", slug: "h3lo", requirement: "Finish your very first quest." },
+  { id: "streak-3", name: "On Fire", icon: "🔥", type: "Streaks", slug: "f1r3", requirement: "Practice 3 days in a row.", goal: 3, track: "streak" },
+  { id: "streak-7", name: "7-Day Streak", icon: "⚡", type: "Streaks", slug: "7f3k", requirement: "Practice 7 days in a row.", goal: 7, track: "streak" },
+  { id: "streak-30", name: "30-Day Streak", icon: "🌋", type: "Streaks", slug: "v30x", requirement: "Practice 30 days in a row.", goal: 30, track: "streak" },
+  { id: "python-1", name: "Python Lvl 1", icon: "🐍", type: "Skills", slug: "py01", requirement: "Complete 10 Python quests." },
+  { id: "python-2", name: "Python Lvl 2", icon: "🐍", type: "Skills", slug: "py02", requirement: "Complete 25 Python quests.", goal: 25 },
+  { id: "java-1", name: "Java Lvl 1", icon: "☕", type: "Skills", slug: "jv01", requirement: "Complete 10 Java quests.", goal: 10 },
+  { id: "speed-runner", name: "Speed Runner", icon: "⏱️", type: "Skills", slug: "sp33", requirement: "Beat the clock on 5 timed quests.", goal: 5 },
+  { id: "web-1", name: "Web Weaver", icon: "🕸️", type: "Skills", slug: "wb01", requirement: "Complete 8 Web quests.", goal: 8 },
+  { id: "git-1", name: "Merge Master", icon: "🔀", type: "Skills", slug: "gt01", requirement: "Complete the Git & Command Line class.", goal: 6 },
+  { id: "night-owl", name: "Night Owl", icon: "🦉", type: "Streaks", slug: "n1gh", requirement: "Finish a quest after 10 PM." },
+  { id: "class-act", name: "Class Act", icon: "🎓", type: "Seasons", slug: "c1as", requirement: "Join your first classroom." },
+  { id: "season-top3", name: "Season 1 · Top 3", icon: "🏆", type: "Seasons", slug: "s1t3", requirement: "Finish a classroom season in the top 3." },
+  { id: "bug-squasher", name: "Bug Squasher", icon: "🐛", type: "Skills", slug: "bg10", requirement: "Pass 10 quests without using a hint.", goal: 10 },
+  { id: "early-bird", name: "Early Bird", icon: "🌅", type: "Streaks", slug: "e4rl", requirement: "Finish a quest before 8 AM.", goal: 1 },
+  { id: "helper", name: "Study Buddy", icon: "🤝", type: "Seasons", slug: "p41r", requirement: "Add 3 friends to your leaderboard.", goal: 3 },
 ];
 
 /* Exercises. Code lines use {0}, {1}… for blanks; `answers` lists accepted values per blank.

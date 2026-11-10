@@ -5,7 +5,7 @@ const vm = require("node:vm");
 
 module.exports = function loadData() {
   const src = fs.readFileSync(path.join(__dirname, "..", "js", "data.js"), "utf8");
-  const names = ["SKILLS", "QUESTS", "DAILY", "BADGES", "CLASSES", "answerIsAccepted"];
+  const names = ["SKILLS", "QUESTS", "DAILY", "BADGES", "CLASSES", "DEFAULT_STATE", "FRESH_STATE", "answerIsAccepted"];
   const sandbox = {};
   vm.createContext(sandbox);
   vm.runInContext(`${src}\n;globalThis.__data = { ${names.join(", ")} };`, sandbox);

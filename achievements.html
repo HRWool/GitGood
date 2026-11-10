@@ -40,8 +40,8 @@
   </div>
 </div></div></div>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, state } = GG;
   let filter = "All";
@@ -101,7 +101,7 @@
       <div class="row" style="justify-content:center;margin:6px 0 10px">${on ? `<span class="badge xl earned">${b.icon}</span>` : `<span class="badge xl locked" style="filter:grayscale(.6);opacity:.8">${b.icon}</span>`}</div>
       <span class="pill ${on ? "gold" : "grey"}">${b.type} · ${on ? "Earned " + (state.earnedOn[id] || GG.today()) : "Locked"}</span>
       <h2 style="margin:10px 0 4px">${b.name}</h2>
-      <p class="muted">${b.req}</p>
+      <p class="muted">${b.requirement}</p>
       ${on ? "" : `<div style="margin:14px 0 4px"><div class="row between small"><b>Progress</b><span>${p.have}/${p.goal}</span></div><div class="bar flame" style="margin-top:6px"><span data-w="${p.pct}"></span></div></div>`}
       <div class="row" style="margin-top:16px">
         ${on ? `<button class="btn btn-gold grow" data-share="${id}">🔗 Share</button><button class="btn btn-ghost grow" data-pin="${id}">${state.pinned.includes(id) ? "📌 Pinned" : "📌 Pin"}</button>`

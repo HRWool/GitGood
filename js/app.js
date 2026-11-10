@@ -8,7 +8,13 @@ const GG = (() => {
   function load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) return Object.assign(clone(DEFAULT_STATE), JSON.parse(raw));
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const state = Object.assign(clone(DEFAULT_STATE), saved);
+        const progressDefaults = state.fresh ? FRESH_STATE.badgeProgress : DEFAULT_STATE.badgeProgress;
+        state.badgeProgress = Object.assign({}, progressDefaults, saved.badgeProgress);
+        return state;
+      }
     } catch { /* storage blocked: fall back to seed data */ }
     return clone(DEFAULT_STATE);
   }
@@ -90,12 +96,12 @@ const GG = (() => {
   function badgeProgress(b) {
     if (earned(b.id)) return { have: 1, goal: 1, pct: 100 };
     const goal = b.goal || 1;
-    const have = b.track === "streak" ? state.streak : (b.have || 0);
+    const have = b.track === "streak" ? state.streak : (state.badgeProgress[b.id] || 0);
     return { have: Math.min(have, goal), goal, pct: Math.round(Math.min(have, goal) / goal * 100) };
   }
   function ranked(list, myXp) {
     const rows = list.map(([name, av, xp]) => ({ name, av, xp, me: false }));
-    rows.push({ name: "You", av: state.avatar, xp: myXp, me: true });
+    rows.push({ name: displayName(), av: state.avatar, xp: myXp, me: true });
     rows.sort((a, b) => b.xp - a.xp || (a.me ? -1 : 1));
     rows.forEach((r, i) => (r.rank = i + 1));
     return rows;
@@ -124,6 +130,7 @@ const GG = (() => {
     const firstToday = state.doneToday.length === 0;
     if (firstToday) {
       state.streak += 1;
+      state.bestStreak = Math.max(state.bestStreak, state.streak);
       state.week[6] = 1;
       out.streakUp = true;
     }
@@ -136,7 +143,7 @@ const GG = (() => {
     if (state.streak >= 3 && unlockBadge("streak-3")) out.badges.push("streak-3");
     if (state.streak >= 7 && unlockBadge("streak-7")) out.badges.push("streak-7");
     if (new Date().getHours() >= 22 && unlockBadge("night-owl")) out.badges.push("night-owl");
-    if (q.timed) { const sr = badge("speed-runner"); sr.have = (sr.have || 0) + 1; }
+    if (q.timed) state.badgeProgress["speed-runner"] += 1;
     out.rankAfter = appRank();
     state.lastRankMove = q.fromLeaderboard ? { from: out.rankBefore, to: out.rankAfter } : null;
     save();

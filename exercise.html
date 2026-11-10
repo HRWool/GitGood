@@ -53,8 +53,8 @@
   </div>
 </div></div></div>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, $$, state } = GG;
   const params = new URLSearchParams(location.search);
@@ -175,7 +175,7 @@
       return `<div class="card cream" style="margin-top:10px">
         <div class="tiny" style="font-weight:900;color:#8a7426;letter-spacing:.08em">ACHIEVEMENT UNLOCKED</div>
         <div class="row" style="justify-content:center;margin:6px 0">${GG.badgeHTML(b)}</div>
-        <b>${b.name}</b><div class="small muted">${b.req}</div>
+        <b>${b.name}</b><div class="small muted">${b.requirement}</div>
         <div class="row" style="margin-top:10px">
           <a class="btn btn-gold btn-sm grow" href="achievements.html?share=${id}">Share</a>
           <button class="btn btn-ghost btn-sm grow" data-later>Later</button>

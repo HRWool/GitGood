@@ -39,14 +39,17 @@
   </div>
 </div></div></div>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, state } = GG;
+  const rows = GG.ranked(LB_APP, state.xp);
+  const me = rows.find((row) => row.me);
+  const above = rows[me.rank - 2];
   const N = {
     quest: { title: "Prospector Café ☕", body: "“Can you help me count today's orders before the lunch rush?”", act: "Start quest", when: "now" },
     streak: { title: `Your ${state.streak || 1}-day streak is at risk! 🔥`, body: "Don't let this branch go stale — 2 hours left to commit.", act: "Practice", when: "8:00 PM" },
-    leaderboard: { title: "Sam just passed you 👀", body: "You're 15 XP behind #11. One quick quest puts you back ahead.", act: "Rank up", when: "6:12 PM" },
+    leaderboard: { title: above ? `${above.name} is ahead of you 👀` : "You're at the top of the leaderboard 👑", body: above ? `You're ${above.xp - state.xp} XP behind #${above.rank}. One quick quest could move you up.` : `You're #${me.rank} this week. Keep it up!`, act: above ? "Rank up" : "View board", when: "6:12 PM" },
   };
   const TOGGLES = [
     ["streak", "🔥 Streak reminders", "A nudge when your streak is about to break"],

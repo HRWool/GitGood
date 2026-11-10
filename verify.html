@@ -32,8 +32,8 @@
     <p class="center" style="margin-top:10px"><a class="link" href="achievements.html">← Back to the app</a></p>
   </main>
 
-<script src="js/data.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/data.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 <script>
   const { $, state } = GG;
   // Whose badge are we showing? The viewer's own if they've earned it; otherwise the
@@ -62,7 +62,7 @@
       <div class="verified">✔ Verified by Git Good</div>${who.isSample ? `<div class="tiny muted" style="margin:-10px 0 14px">Showing a sample student, since you have not earned this badge yet.</div>` : ""}
       <div class="row" style="justify-content:center"><span class="badge xl earned">${b.icon}</span></div>
       <h1 style="font-size:28px;margin:14px 0 4px">${b.name}</h1>
-      <p class="muted">${b.req}</p>
+      <p class="muted">${b.requirement}</p>
       <div class="row" style="justify-content:center;gap:18px;margin:16px 0 4px;flex-wrap:wrap">
         <div><div class="tiny muted" style="font-weight:900">EARNED</div><b>${date}</b></div>
         <div><div class="tiny muted" style="font-weight:900">CATEGORY</div><b>${b.type}</b></div>
