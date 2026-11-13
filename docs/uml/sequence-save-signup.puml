@@ -17,9 +17,9 @@ note over Student, DB
 end note
 
 == Create the account ==
-Student -> UI : Enter UNCC email, username, avatar\nand press Create account
+Student -> UI : Enter UNCC email, username, avatar,\npassword and press Create account
 UI -> UI : Client-side checks (UNCC email,\n3–18 character username, password length)
-UI -> API : POST /api/students\n{ email, username, avatar }
+UI -> API : POST /api/students\n{ email, username, avatar, password }
 activate API
 API -> Service : createStudent(prisma, body)
 activate Service
@@ -39,9 +39,10 @@ else input is valid
   alt email or username already used
     Service --> API : ConflictError
     API --> UI : 409 { errors }
-    UI --> Student : "That email already has an account"\n+ Load my saved account button
+    UI --> Student : "That email already has an account"\nor "That username is taken"
   else new student
-    Service -> ORM : student.create({ email, username, avatar })
+    Service -> Service : hashPassword(password)\n(salted scrypt)
+    Service -> ORM : student.create({ email, username,\navatar, passwordHash })
     activate ORM
     ORM -> DB : INSERT INTO "Student"
     DB --> ORM : new row (id, createdAt)
@@ -76,7 +77,31 @@ UI --> Student : Continue to the first quest
 deactivate Service
 deactivate API
 
-== After a restart: load the profile ==
+== After a restart: sign in ==
+Student -> UI : Enter email and password\non the welcome page (index.html)
+UI -> API : POST /api/auth/login\n{ email, password }
+activate API
+API -> Service : authenticateStudent(prisma, body)
+activate Service
+Service -> ORM : student.findUnique(email, include skills)
+ORM -> DB : SELECT "Student" JOIN "StudentSkill" JOIN "Skill"
+DB --> ORM : student + skills (or none)
+ORM --> Service : Student or null
+Service -> Service : verifyPassword(password, passwordHash)
+alt no account or wrong password
+  Service --> API : AuthenticationError
+  API --> UI : 401 "Email or password is incorrect."
+  UI --> Student : Show the message
+else password matches
+  Service --> API : profile
+  API --> UI : 200 { student }
+  UI -> UI : Store studentId in local state
+  UI --> Student : Go to the home screen
+end
+deactivate Service
+deactivate API
+
+== Load the profile ==
 Student -> UI : Open Profile
 UI -> API : GET /api/students/{id}
 activate API
