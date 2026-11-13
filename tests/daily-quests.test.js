@@ -9,10 +9,11 @@ const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(
   `${fs.readFileSync(path.join(__dirname, "..", "js", "data.js"), "utf8")}
-  ;globalThis.__data = { SKILLS, QUESTS, DAILY, dailyQuestsFor };`,
+  ;globalThis.__data = { SKILLS, QUESTS, DAILY, dailyQuestsFor, firstQuestFor };`,
   sandbox
 );
 const { SKILLS, QUESTS, DAILY } = sandbox.__data;
+const firstQuestFor = (...args) => sandbox.__data.firstQuestFor(...args);
 // Copy results into this realm so deepEqual compares plain arrays.
 const dailyQuestsFor = (...args) => [...sandbox.__data.dailyQuestsFor(...args)];
 const skillOf = (ids) => ids.map((id) => QUESTS[id].skill);
@@ -46,4 +47,18 @@ test("ignores custom, unknown, duplicate and missing skills", () => {
   assert.deepEqual(dailyQuestsFor([]), []);
   assert.deepEqual(dailyQuestsFor(undefined), []);
   assert.deepEqual(skillOf(dailyQuestsFor(["Java", "Java", "React"])), ["Java"]);
+});
+
+test("each suggested skill starts with an exercise for that skill", () => {
+  for (const skill of SKILLS) {
+    const quest = QUESTS[firstQuestFor([skill.id])];
+    assert.ok(quest, `no first exercise for ${skill.id}`);
+    assert.equal(quest.skill, skill.id);
+  }
+});
+
+test("the first selected supported skill determines the onboarding exercise", () => {
+  assert.equal(QUESTS[firstQuestFor(["Web", "Java"])].skill, "Web");
+  assert.equal(QUESTS[firstQuestFor(["custom", "SQL"])].skill, "SQL");
+  assert.equal(firstQuestFor(["custom"]), "first");
 });

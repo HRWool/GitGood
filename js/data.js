@@ -13,9 +13,10 @@ const SKILLS = [
 
 const AVATARS = ["🦊", "🐢", "🦉", "🐙", "🐝", "🦖", "🐧", "🐲"];
 
-// Week-in "Maya" — used whenever someone jumps straight into the app without onboarding.
+// Week-in "Maya" — loaded only when the user explicitly chooses the demo account.
 const DEFAULT_STATE = {
   onboarded: true,
+  authenticated: false,
   fresh: false,
   name: "Maya Chen",
   username: "maya_codes",
@@ -52,6 +53,7 @@ const DEFAULT_STATE = {
 // Brand-new account created by the sign-up flow.
 const FRESH_STATE = {
   onboarded: true,
+  authenticated: false,
   name: "",
   username: "",
   email: "",
@@ -335,6 +337,22 @@ function answerIsAccepted(accepted, value, acceptAny = false) {
 
 // Pool of daily quests. Each student only gets the ones that match their skills (see GG.dailyQuests).
 const DAILY = ["daily-py", "daily-web", "daily-git", "daily-java", "daily-sql", "daily-dsa", "daily-cpp", "daily-php"];
+
+const FIRST_QUESTS = {
+  Python: "first",
+  Web: "daily-web",
+  Git: "daily-git",
+  Java: "daily-java",
+  SQL: "daily-sql",
+  DSA: "daily-dsa",
+  "C++": "daily-cpp",
+  PHP: "daily-php",
+};
+
+function firstQuestFor(skills) {
+  const selected = Array.isArray(skills) ? skills : [];
+  return selected.map((skill) => FIRST_QUESTS[skill]).find(Boolean) || "first";
+}
 
 const CLASSES = [
   {

@@ -2,7 +2,7 @@
 
 This guide sets up a reproducible **local development database** for Git Good using **PostgreSQL** and the **Prisma ORM**. The tables come from the committed Prisma migration in `prisma/migrations/`, and sample data comes from `prisma/seed.js`, so every teammate gets the same schema.
 
-`npm start` runs a small Node server that serves the site and the database API used by sign-up, Pick skills and Profile (issue #44). Only that server, the Prisma scripts and the tests use `DATABASE_URL`; browser JavaScript never sees it. The rest of the prototype still keeps its state in `localStorage`.
+`npm start` runs a small Node server that serves the site and the database API used by sign-up, sign-in, Pick skills and Profile. Only that server, the Prisma scripts and the tests use `DATABASE_URL`; browser JavaScript never sees it. Passwords are stored as scrypt hashes. The rest of the prototype still keeps its progress in `localStorage`.
 
 ## Why PostgreSQL and Prisma
 
@@ -68,9 +68,35 @@ JOIN "Skill" k ON k.id = ss."skillId"
 ORDER BY s."createdAt" DESC;
 ```
 
-**Persistence check (Part 5):** stop the server with Ctrl+C, run `npm start` again, and reload Profile: the same username and skills load from the database. For a clean browser (for example a private window), open the sign-up page, enter the same email and username, press **Create account**, then **Load my saved account**.
+**Persistence check (Part 5):** stop the server with Ctrl+C, run `npm start` again, sign out, then sign in with the same email and password. The Profile screen should show the same username and skills from the database.
 
 If PostgreSQL is stopped, sign-up shows "The database is not reachable right now" instead of failing silently.
+
+### Accounts created before password sign-in was added
+
+The password migration adds a nullable `passwordHash` column, so applying it preserves existing student accounts and their related data. Accounts created before password sign-in was added have no password hash and cannot sign in until their password is set. They also cannot sign up again with the same email because the account already exists.
+
+1. Back up the database. Stop the running server, then apply the schema migration and regenerate Prisma Client:
+
+   ```sh
+   npm run db:migrate
+   npm run db:generate
+   ```
+
+2. In pgAdmin's Query Tool, connected to `gitgood`, identify affected accounts. Treat the results as private account data:
+
+   ```sql
+   SELECT id, email, username
+   FROM "Student"
+   WHERE "passwordHash" IS NULL
+   ORDER BY "createdAt";
+   ```
+
+3. Verify the account owner before resetting their password. Until a verified password-reset flow is available, have the database administrator set a new password through a trusted, private process using the application's `hashPassword` helper, then store only the resulting scrypt hash in that account's `passwordHash` column. Never put a plaintext password in SQL, logs, source control, or shared messages.
+
+4. Have the account owner sign in using the new password. Do not delete and recreate the student row; existing skills and other related records belong to that account.
+
+The current app does not provide a self-service password-reset screen, so affected users need administrator assistance.
 
 ## Automated tests and the test database
 
@@ -91,11 +117,13 @@ The database tests create and delete their own rows, so they run against a **sep
    npm run lint
    ```
 
-   `npm test` should end with `# pass 44` and `# fail 0`. If `TEST_DATABASE_URL` is missing or unsafe, the line `sign-up saved in PostgreSQL # SKIP …` explains why, and the other tests still run.
+   `npm test` should report all runnable tests passing. If `TEST_DATABASE_URL` is missing or unsafe, the line `sign-up saved in PostgreSQL # SKIP …` explains why, and the other tests still run.
 
 ## Keeping your database up to date
 
 After `git pull`, if a teammate added a new folder under `prisma/migrations/`, run `npm run db:migrate` to apply it to your local database. Change the schema only by editing `prisma/schema.prisma` and creating a migration (`npx prisma migrate dev --name describe-change`), then commit both the schema and the new migration folder. Never edit tables by hand or share database files.
+
+Stop a running `npm start` server before applying schema changes or regenerating Prisma Client; on Windows, the active server can lock the query engine file.
 
 ## Part 3: Team database verification
 

@@ -48,9 +48,12 @@
     </div>
 
     <div class="card flat stack">
+      <div class="row between"><b>Signed in as</b><span id="account-identity"></span></div>
+      <div class="row between small muted"><span>Email</span><span id="account-email"></span></div>
       <a class="row between" href="notifications.html"><b>🔔 Notification settings</b><span>›</span></a>
       <a class="row between" id="public" href="verify.html"><b>🌐 View my public profile</b><span>›</span></a>
       <button class="row between" id="share"><b>🔗 Copy profile link</b><span>›</span></button>
+      <button class="row between" id="signout"><b style="color:#C7302B">↪ Sign out</b><span>›</span></button>
       <button class="row between" id="restart"><b style="color:#C7302B">↺ Restart demo</b><span>›</span></button>
     </div>
   </div>
@@ -67,6 +70,8 @@
   $("#lvl-ring").dataset.p = lvl.pct;
   $("#nm").textContent = state.name || state.username;
   $("#un").innerHTML = `@${state.username} · <b style="color:var(--gold-bright)">Level ${lvl.n}</b> · ${lvl.need - lvl.into} XP to next`;
+  $("#account-identity").textContent = `@${state.username || "guest"}`;
+  $("#account-email").textContent = state.email || "Not provided";
   $("#stats").innerHTML = [
     ["🔥", state.streak, "streak"], ["⚡", state.xp.toLocaleString(), "XP"], ["🏅", state.earned.length, "badges"], ["🏆", "#" + GG.appRank(), "rank"],
   ].map(([i, v, l]) => `<div><div style="font-size:20px">${i}</div><b style="font-size:17px">${v}</b><div class="tiny muted">${l}</div></div>`).join("");
@@ -129,6 +134,7 @@
   const showcase = GG.badge(state.pinned[0] || state.earned[0] || "streak-7");
   $("#public").href = `verify.html?a=${showcase.slug}`;
   $("#share").onclick = () => GG.copy(GG.siteURL(`verify.html?a=${showcase.slug}`), "Profile link copied");
+  $("#signout").onclick = GG.signOut;
   $("#restart").onclick = GG.restart;
   drawSkills(); drawPins(); drawPaths();
 
@@ -137,6 +143,8 @@
     $("#av").innerHTML = `<span class="avatar xl">${state.avatar}</span>`;
     $("#nm").textContent = state.name || state.username;
     $("#un").innerHTML = `@${state.username} · <b style="color:var(--gold-bright)">Level ${lvl.n}</b> · ${lvl.need - lvl.into} XP to next`;
+    $("#account-identity").textContent = `@${state.username || "guest"}`;
+    $("#account-email").textContent = state.email || "Not provided";
   }
   async function syncFromDatabase() {
     if (!state.studentId) return;

@@ -20,6 +20,7 @@
       <a href="profile.html" id="me-av"></a>
       <div class="grow">
         <h1 style="font-size:20px" id="hello"></h1>
+        <p class="tiny" id="session-identity" style="opacity:.85;font-weight:800"></p>
       </div>
       <div class="stat-pills">
         <a class="stat-pill flame" href="#streak"><span class="flame">🔥</span><span id="sp-streak"></span></a>
@@ -42,6 +43,7 @@
   const h = new Date().getHours();
   const greet = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
   $("#hello").textContent = `${greet}, ${GG.firstName()} 👋`;
+  $("#session-identity").textContent = `Signed in as @${state.username || "guest"}`;
   $("#me-av").innerHTML = GG.avatarHTML(state.avatar, "lg");
   $("#sp-streak").textContent = state.streak;
   $("#lvl-label").textContent = `Level ${lvl.n}`;
@@ -52,8 +54,9 @@
   const done = GG.doneDaily();
   const anyToday = state.doneToday.length > 0;
   const nextQ = daily.find((q) => !state.doneToday.includes(q)) || daily[0];
+  const firstQuestId = firstQuestFor(state.skills);
   const firstQuest = state.fresh && !state.earned.includes("hello-world");
-  const focusQuest = firstQuest ? QUESTS.first : done < daily.length ? QUESTS[nextQ] : null;
+  const focusQuest = firstQuest ? QUESTS[firstQuestId] : done < daily.length ? QUESTS[nextQ] : null;
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   const cls = CLASSES.find((c) => c.id === state.joinedClass);
   const lbRows = GG.ranked(LB_APP, state.xp);
@@ -84,11 +87,11 @@
     </div>
     <p class="small muted">${focusQuest ? `${focusQuest.skill} · ~${focusQuest.minutes} min · +${focusQuest.xp} XP` : daily.length ? "All of today's daily quests are complete. Great work!" : "There are no quests for your skills yet. Add a skill like Python, Java or SQL to get daily quests."}</p>
     ${!focusQuest && !daily.length ? `<a class="btn btn-ghost btn-block" href="profile.html">Add a skill</a>` : ""}
-    ${focusQuest ? `<a class="btn btn-primary btn-block dashboard-primary" href="${firstQuest ? "quiz-intro.html" : `exercise.html?q=${nextQ}`}">${firstQuest ? "Start your first quest" : "Start quest"} <span aria-hidden="true">→</span></a>` : ""}
+    ${focusQuest ? `<a class="btn btn-primary btn-block dashboard-primary" href="${firstQuest ? `quiz-intro.html?q=${firstQuestId}` : `exercise.html?q=${nextQ}`}">${firstQuest ? "Start your first quest" : "Start quest"} <span aria-hidden="true">→</span></a>` : ""}
     ${!anyToday && state.streak > 0 ? `<p class="dashboard-nudge">Complete a quest today to keep your ${state.streak}-day streak.</p>` : ""}
   </section>`);
 
-  const otherDaily = daily.filter((id) => !focusQuest || firstQuest || id !== nextQ);
+  const otherDaily = daily.filter((id) => !focusQuest || id !== (firstQuest ? firstQuestId : nextQ));
   if (otherDaily.length) parts.push(`<details class="dashboard-details card rise">
     <summary><span>${focusQuest && !firstQuest ? "Other daily quests" : "Today's daily quests"}</span><span class="dashboard-toggle" aria-hidden="true"></span></summary>
     <div class="dashboard-quest-list">${otherDaily.map((id) => {

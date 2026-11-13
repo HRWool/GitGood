@@ -37,12 +37,24 @@ const GG = (() => {
     try { localStorage.removeItem(KEY); } catch { /* ignore */ }
     location.href = "index.html";
   }
+  function signOut() {
+    state.authenticated = false;
+    save();
+    location.href = "index.html";
+  }
+  function startDemo() {
+    Object.keys(state).forEach((k) => delete state[k]);
+    Object.assign(state, clone(DEFAULT_STATE), { authenticated: true });
+    state.friends = { invites: [], accepted: [], pending: [] };
+    save();
+  }
   // Jump a new user one week ahead so the leaderboard/streak screens have real-looking data.
   function fastForward() {
     const keep = { name: state.name, username: state.username, email: state.email, avatar: state.avatar, skills: state.skills, studentId: state.studentId, savedAt: state.savedAt };
     Object.keys(state).forEach((k) => delete state[k]);
     Object.assign(state, clone(DEFAULT_STATE));
     Object.entries(keep).forEach(([k, v]) => { if (v && (!Array.isArray(v) || v.length)) state[k] = v; });
+    state.authenticated = true;
     state.friends = { invites: [], accepted: [], pending: [] };
     save();
   }
@@ -139,7 +151,9 @@ const GG = (() => {
     state.xp += q.xp;
     if (q.classQuest) state.classXp += q.xp;
     state.questsTotal += 1;
-    if (q.badge && unlockBadge(q.badge)) out.badges.push(q.badge);
+    const firstQuest = state.fresh && qid === firstQuestFor(state.skills);
+    const badge = q.badge || (firstQuest ? "hello-world" : null);
+    if (badge && unlockBadge(badge)) out.badges.push(badge);
     if (state.streak >= 3 && unlockBadge("streak-3")) out.badges.push("streak-3");
     if (state.streak >= 7 && unlockBadge("streak-7")) out.badges.push("streak-7");
     if (new Date().getHours() >= 22 && unlockBadge("night-owl")) out.badges.push("night-owl");
@@ -419,8 +433,8 @@ const GG = (() => {
   const api = {
     available: apiAvailable,
     createStudent: (profile) => apiCall("POST", "/api/students", profile),
+    login: (email, password) => apiCall("POST", "/api/auth/login", { email, password }),
     getStudent: (id) => apiCall("GET", `/api/students/${encodeURIComponent(id)}`),
-    findByEmail: (email) => apiCall("GET", `/api/students?email=${encodeURIComponent(email)}`),
     saveSkills: (id, skills) => apiCall("PUT", `/api/students/${encodeURIComponent(id)}/skills`, { skills }),
   };
   // Copy a profile returned by the API into the local state used by every screen.
@@ -432,11 +446,21 @@ const GG = (() => {
       avatar: student.avatar,
       skills: student.skills.map((s) => s.name),
       savedAt: student.createdAt,
+      authenticated: true,
     });
     save();
   }
 
   function init() {
+    const page = currentFile();
+    if (!["index.html", "signup.html"].includes(page) && !state.authenticated) {
+      location.href = "index.html";
+      return;
+    }
+    if (page === "index.html" || page === "signup.html") {
+      animateBars();
+      return;
+    }
     injectStatusbar();
     injectTabbar();
     injectDemoPanels();
@@ -448,7 +472,7 @@ const GG = (() => {
   else init();
 
   return {
-    state, save, startFresh, api, applyProfile, restart, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
+    state, save, startFresh, startDemo, api, applyProfile, restart, signOut, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
     ranked, appRank, today, dailyQuests, doneDaily, unlockBadge, completeQuest, addXP,
     $, $$, badgeHTML, avatarHTML, toast, openSheet, closeSheet, openModal, closeModal, confettiBurst, countUp, animateBars, copy, siteURL,
   };

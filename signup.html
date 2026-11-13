@@ -28,7 +28,7 @@
     </div>
     <div class="field">
       <label for="pw">Password</label>
-      <input class="input" id="pw" type="password" placeholder="At least 8 characters" autocomplete="new-password">
+      <input class="input" id="pw" type="password" placeholder="8–128 characters" maxlength="128" autocomplete="new-password">
       <div class="err" id="pw-err"></div>
     </div>
     <div class="field">
@@ -41,9 +41,8 @@
       <div class="avatar-pick" id="avatars"></div>
     </div>
     <div class="err" id="form-err" role="alert"></div>
-    <button class="btn btn-ghost btn-block" type="button" id="load-account" style="display:none">Load my saved account</button>
     <button class="btn btn-primary btn-block" type="submit" id="create">Create account</button>
-    <p class="tiny muted center">🔒 Passwords are stored hashed (NFR-3). Your email is only used to confirm you're a Niner.</p>
+    <p class="tiny muted center">🔒 Your password is securely hashed and saved with your account. Sign-up requires a database connection.</p>
   </form>
 </div></div></div>
 
@@ -69,6 +68,7 @@
   function showServerErrors(errors = {}) {
     if (errors.email) check($("#email"), $("#email-err"), false, errors.email);
     if (errors.username) check($("#user"), $("#user-err"), false, errors.username);
+    if (errors.password) check($("#pw"), $("#pw-err"), false, errors.password);
   }
   function busy(on, label) {
     $("#create").disabled = on;
@@ -79,44 +79,28 @@
     e.preventDefault();
     const email = $("#email").value.trim(), pw = $("#pw").value, user = $("#user").value.trim();
     $("#form-err").textContent = "";
-    $("#load-account").style.display = "none";
     const okEmail = check($("#email"), $("#email-err"), UNCC.test(email),
       email ? "Git Good is for Niners only — use your @charlotte.edu or @uncc.edu email." : "Enter your UNCC email.");
-    const okPw = check($("#pw"), $("#pw-err"), pw.length >= 8, "Use at least 8 characters.");
+    const okPw = check($("#pw"), $("#pw-err"), pw.length >= 8 && pw.length <= 128, "Use 8–128 characters.");
     const okUser = check($("#user"), $("#user-err"), /^[a-z0-9_]{3,18}$/i.test(user), "3–18 letters, numbers or underscores.");
     if (!(okEmail && okPw && okUser)) return;
 
-    // Issue #44: with `npm start` the account is saved in PostgreSQL; on GitHub Pages it stays in this browser.
+    // Accounts require the database API so credentials are never stored in browser-only state.
     busy(true, "Creating account…");
-    const res = await GG.api.createStudent({ email, username: user, avatar });
+    const res = await GG.api.createStudent({ email, username: user, avatar, password: pw });
     busy(false);
-    if (res.offline) {
-      GG.startFresh({ email, username: user, name: "", avatar });
-    } else if (res.ok) {
-      GG.startFresh({ name: "" });
-      GG.applyProfile(res.student);
-    } else {
-      showServerErrors(res.errors);
-      if (res.status === 409 && res.errors && res.errors.email) $("#load-account").style.display = "";
-      else if (!res.errors) $("#form-err").textContent = res.error || "Couldn't create your account. Try again.";
-      return;
-    }
-    location.href = "skills.html";
-  });
-
-  // A returning student (for example after the server restarts or the browser is cleared)
-  // can load the account and skills that are already saved in the database.
-  $("#load-account").addEventListener("click", async () => {
-    $("#form-err").textContent = "";
-    const res = await GG.api.findByEmail($("#email").value.trim());
     if (!res.ok) {
-      $("#form-err").textContent = res.error || "Couldn't load that account.";
+      if (res.offline) {
+        $("#form-err").textContent = "Database sign-up is unavailable. Start Git Good with npm start and try again.";
+        return;
+      }
+      showServerErrors(res.errors);
+      if (!res.errors) $("#form-err").textContent = res.error || "Couldn't create your account. Try again.";
       return;
     }
     GG.startFresh({ name: "" });
     GG.applyProfile(res.student);
-    GG.toast("✅ Account loaded from the database");
-    location.href = res.student.skills.length ? "profile.html" : "skills.html";
+    location.href = "skills.html";
   });
 </script>
 </body>

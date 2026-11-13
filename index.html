@@ -28,9 +28,21 @@
     </div>
 
     <div class="cta">
-      <a class="btn btn-gold btn-block" href="signup.html">Get started — it's free</a>
-      <a class="btn-text" href="home.html" id="have-account">I already have an account</a>
-      <a class="btn btn-ghost btn-sm" href="storyboard.html" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25);box-shadow:none">📖 See how we designed it</a>
+      <form class="card" id="login-form" novalidate>
+        <h2 style="margin-bottom:10px">Sign in</h2>
+        <div class="field" style="text-align:left">
+          <label for="login-email">UNCC email</label>
+          <input class="input" id="login-email" type="email" placeholder="you@charlotte.edu" autocomplete="username">
+        </div>
+        <div class="field" style="text-align:left;margin-top:8px">
+          <label for="login-password">Password</label>
+          <input class="input" id="login-password" type="password" placeholder="Your password" autocomplete="current-password">
+        </div>
+        <div class="err" id="login-error" role="alert" style="margin-top:6px"></div>
+        <button class="btn btn-primary btn-block" id="login-submit" type="submit">Sign in</button>
+      </form>
+      <a class="btn btn-gold btn-block" href="signup.html">Create a new account</a>
+      <button class="btn btn-ghost btn-block" id="demo-login" type="button" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.25);box-shadow:none">Continue as demo · Maya</button>
       <p class="tiny" style="opacity:.7">Exclusively for UNC Charlotte computing students 💚💛</p>
     </div>
   </div>
@@ -39,9 +51,29 @@
 <script src="js/data.js?v=10"></script>
 <script src="js/app.js?v=10"></script>
 <script>
-  // "I already have an account" drops you into the week-in demo account.
-  GG.$("#have-account").addEventListener("click", (e) => {
-    if (GG.state.fresh) { e.preventDefault(); GG.fastForward(); location.href = "home.html"; }
+  const { $, state, api } = GG;
+  const form = $("#login-form");
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    $("#login-error").textContent = "";
+    $("#login-submit").disabled = true;
+    $("#login-submit").textContent = "Signing in…";
+    const res = await api.login($("#login-email").value.trim(), $("#login-password").value);
+    $("#login-submit").disabled = false;
+    $("#login-submit").textContent = "Sign in";
+    if (!res.ok) {
+      $("#login-error").textContent = res.offline
+        ? "Database sign-in is unavailable. Start Git Good with npm start and try again."
+        : res.error || "Couldn't sign in. Try again.";
+      return;
+    }
+    if (state.studentId !== res.student.id) GG.startFresh({ name: "" });
+    GG.applyProfile(res.student);
+    location.href = res.student.skills.length ? "home.html" : "skills.html";
+  });
+  $("#demo-login").addEventListener("click", () => {
+    GG.startDemo();
+    location.href = "home.html";
   });
 </script>
 </body>
