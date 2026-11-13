@@ -44,8 +44,8 @@
   </div>
 </div></div></div>
 
-<script src="js/data.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
+<script src="js/data.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
 <script>
   const { $, state } = GG;
   $("#nm").textContent = state.username || "there";
@@ -74,8 +74,23 @@
     render();
     GG.toast(`✨ “${v}” flagged — we'll add it to your quests`);
   });
-  $("#go").addEventListener("click", () => {
-    state.skills = [...picked];
+  $("#go").addEventListener("click", async () => {
+    const skills = [...picked];
+    // Issue #44: a database-backed account saves its skills through the API before moving on.
+    if (state.studentId) {
+      $("#go").disabled = true;
+      $("#go").textContent = "Saving…";
+      const res = await GG.api.saveSkills(state.studentId, skills);
+      $("#go").textContent = "Continue";
+      $("#go").disabled = false;
+      if (res.ok) {
+        GG.applyProfile(res.student);
+      } else if (!res.offline) {
+        GG.toast(`⚠️ ${(res.errors && res.errors.skills) || res.error || "Couldn't save your skills."}`, 3500);
+        return;
+      }
+    }
+    state.skills = skills;
     GG.save();
     location.href = "quiz-intro.html";
   });

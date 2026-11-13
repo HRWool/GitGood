@@ -40,13 +40,15 @@
       <label>Pick your avatar</label>
       <div class="avatar-pick" id="avatars"></div>
     </div>
-    <button class="btn btn-primary btn-block" type="submit">Create account</button>
+    <div class="err" id="form-err" role="alert"></div>
+    <button class="btn btn-ghost btn-block" type="button" id="load-account" style="display:none">Load my saved account</button>
+    <button class="btn btn-primary btn-block" type="submit" id="create">Create account</button>
     <p class="tiny muted center">🔒 Passwords are stored hashed (NFR-3). Your email is only used to confirm you're a Niner.</p>
   </form>
 </div></div></div>
 
-<script src="js/data.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
+<script src="js/data.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
 <script>
   const { $ } = GG;
   let avatar = AVATARS[0];
@@ -64,16 +66,57 @@
     errEl.textContent = ok ? "" : msg;
     return ok;
   }
-  $("#form").addEventListener("submit", (e) => {
+  function showServerErrors(errors = {}) {
+    if (errors.email) check($("#email"), $("#email-err"), false, errors.email);
+    if (errors.username) check($("#user"), $("#user-err"), false, errors.username);
+  }
+  function busy(on, label) {
+    $("#create").disabled = on;
+    $("#create").textContent = on ? label : "Create account";
+  }
+
+  $("#form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = $("#email").value.trim(), pw = $("#pw").value, user = $("#user").value.trim();
+    $("#form-err").textContent = "";
+    $("#load-account").style.display = "none";
     const okEmail = check($("#email"), $("#email-err"), UNCC.test(email),
       email ? "Git Good is for Niners only — use your @charlotte.edu or @uncc.edu email." : "Enter your UNCC email.");
     const okPw = check($("#pw"), $("#pw-err"), pw.length >= 8, "Use at least 8 characters.");
     const okUser = check($("#user"), $("#user-err"), /^[a-z0-9_]{3,18}$/i.test(user), "3–18 letters, numbers or underscores.");
     if (!(okEmail && okPw && okUser)) return;
-    GG.startFresh({ email, username: user, name: "", avatar });
+
+    // Issue #44: with `npm start` the account is saved in PostgreSQL; on GitHub Pages it stays in this browser.
+    busy(true, "Creating account…");
+    const res = await GG.api.createStudent({ email, username: user, avatar });
+    busy(false);
+    if (res.offline) {
+      GG.startFresh({ email, username: user, name: "", avatar });
+    } else if (res.ok) {
+      GG.startFresh({ name: "" });
+      GG.applyProfile(res.student);
+    } else {
+      showServerErrors(res.errors);
+      if (res.status === 409 && res.errors && res.errors.email) $("#load-account").style.display = "";
+      else if (!res.errors) $("#form-err").textContent = res.error || "Couldn't create your account. Try again.";
+      return;
+    }
     location.href = "skills.html";
+  });
+
+  // A returning student (for example after the server restarts or the browser is cleared)
+  // can load the account and skills that are already saved in the database.
+  $("#load-account").addEventListener("click", async () => {
+    $("#form-err").textContent = "";
+    const res = await GG.api.findByEmail($("#email").value.trim());
+    if (!res.ok) {
+      $("#form-err").textContent = res.error || "Couldn't load that account.";
+      return;
+    }
+    GG.startFresh({ name: "" });
+    GG.applyProfile(res.student);
+    GG.toast("✅ Account loaded from the database");
+    location.href = res.student.skills.length ? "profile.html" : "skills.html";
   });
 </script>
 </body>

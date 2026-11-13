@@ -1,0 +1,97 @@
+@startuml
+title Save my sign-up and skills to the database (issue #44)
+autonumber
+skinparam linetype ortho
+
+actor Student
+boundary "Sign-up / Pick skills / Profile\n(signup.html, skills.html, profile.html\n+ GG.api in js/app.js)" as UI
+control "API server\n(server/app.js)" as API
+control "Student service\n(server/students.js)" as Service
+entity "Prisma Client\n(ORM / data access)" as ORM
+database "PostgreSQL\n(gitgood)" as DB
+
+note over Student, DB
+  Implemented user story: "As a new student, I want my account and the skills I pick
+  at sign-up saved to the database so that my profile is still there after the app restarts."
+  Runs with `npm start`. On GitHub Pages there is no API, so the screens fall back to localStorage.
+end note
+
+== Create the account ==
+Student -> UI : Enter UNCC email, username, avatar\nand press Create account
+UI -> UI : Client-side checks (UNCC email,\n3–18 character username, password length)
+UI -> API : POST /api/students\n{ email, username, avatar }
+activate API
+API -> Service : createStudent(prisma, body)
+activate Service
+Service -> Service : validateSignup(body)
+
+alt input is invalid
+  Service --> API : ValidationError (field messages)
+  API --> UI : 400 { errors }
+  UI --> Student : Show the message under each field
+else input is valid
+  Service -> ORM : student.findUnique(email)\nstudent.findUnique(username)
+  activate ORM
+  ORM -> DB : SELECT "Student" WHERE email / username
+  DB --> ORM : existing rows (if any)
+  ORM --> Service : matches
+  deactivate ORM
+  alt email or username already used
+    Service --> API : ConflictError
+    API --> UI : 409 { errors }
+    UI --> Student : "That email already has an account"\n+ Load my saved account button
+  else new student
+    Service -> ORM : student.create({ email, username, avatar })
+    activate ORM
+    ORM -> DB : INSERT INTO "Student"
+    DB --> ORM : new row (id, createdAt)
+    ORM --> Service : Student
+    deactivate ORM
+    Service --> API : profile
+    API --> UI : 201 { student }
+    UI -> UI : Store studentId in local state
+    UI --> Student : Go to Pick skills
+  end
+end
+deactivate Service
+deactivate API
+
+== Save the chosen skills ==
+Student -> UI : Pick skills and press Continue
+UI -> API : PUT /api/students/{id}/skills\n{ skills: [...] }
+activate API
+API -> Service : setStudentSkills(prisma, id, skills)
+activate Service
+Service -> Service : validateSkills(skills)
+Service -> ORM : $transaction
+activate ORM
+ORM -> DB : find or create "Skill" rows\n(built-in: shared row; custom: owned by the student)
+ORM -> DB : DELETE old "StudentSkill" rows\nINSERT new "StudentSkill" rows
+DB --> ORM : committed
+ORM --> Service : done
+deactivate ORM
+Service --> API : profile with skills
+API --> UI : 200 { student }
+UI --> Student : Continue to the first quest
+deactivate Service
+deactivate API
+
+== After a restart: load the profile ==
+Student -> UI : Open Profile
+UI -> API : GET /api/students/{id}
+activate API
+API -> Service : getStudent(prisma, id)
+Service -> ORM : student.findUnique(id, include skills)
+ORM -> DB : SELECT "Student" JOIN "StudentSkill" JOIN "Skill"
+DB --> ORM : student + skills
+ORM --> Service : Student
+Service --> API : profile
+API --> UI : 200 { student }
+UI --> Student : Username, avatar and skills\n"Saved in the database"
+deactivate API
+
+note over API, DB
+  If PostgreSQL is unreachable, Prisma throws a connection error
+  and the API answers 503 with a clear message instead of failing silently.
+end note
+@enduml

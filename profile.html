@@ -20,6 +20,7 @@
       <div class="ring" id="lvl-ring" style="--size:112px;--c:var(--gold-bright)"><div id="av" style="background:transparent"></div></div>
       <h1 style="font-size:22px" id="nm"></h1>
       <p class="sub" id="un"></p>
+      <p class="tiny" id="db-status" style="color:rgba(255,255,255,.85);font-weight:800"></p>
     </div>
   </header>
 
@@ -55,8 +56,8 @@
   </div>
 </div></div></div>
 
-<script src="js/data.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
+<script src="js/data.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
 <script>
   const { $, state } = GG;
   const lvl = GG.level();
@@ -80,7 +81,18 @@
     <p class="small muted" style="margin:4px 0 12px">Your daily quests will start mixing it in.</p>
     <div class="chips" style="margin-bottom:12px">${SKILLS.filter((s) => !state.skills.includes(s.id)).map((s) => `<button class="chip" data-s="${s.id}">${s.icon} ${s.id}</button>`).join("")}</div>
     <form class="row" id="cs"><input class="input grow" placeholder="Or type your own…" maxlength="24"><button class="btn btn-primary btn-sm">Add</button></form>`, (sh) => {
-    const add = (v) => { if (v && !state.skills.includes(v)) { state.skills.push(v); GG.save(); drawSkills(); drawPaths(); } GG.closeSheet(); GG.toast(`✨ ${v} added to your quests`); };
+    const add = async (v) => {
+      GG.closeSheet();
+      if (!v || state.skills.includes(v)) return;
+      if (state.studentId) {
+        const res = await GG.api.saveSkills(state.studentId, [...state.skills, v]);
+        if (res.ok) GG.applyProfile(res.student);
+        else if (!res.offline) { GG.toast(`⚠️ ${(res.errors && res.errors.skills) || res.error || "Couldn't save that skill."}`, 3500); return; }
+        else { state.skills.push(v); GG.save(); }
+      } else { state.skills.push(v); GG.save(); }
+      drawSkills(); drawPaths();
+      GG.toast(`✨ ${v} added to your quests`);
+    };
     sh.querySelectorAll("[data-s]").forEach((b) => (b.onclick = () => add(b.dataset.s)));
     sh.querySelector("#cs").onsubmit = (e) => { e.preventDefault(); add(e.target.querySelector("input").value.trim()); };
   });
@@ -119,6 +131,29 @@
   $("#share").onclick = () => GG.copy(GG.siteURL(`verify.html?a=${showcase.slug}`), "Profile link copied");
   $("#restart").onclick = GG.restart;
   drawSkills(); drawPins(); drawPaths();
+
+  // Issue #44: reload the account from the database so the screen shows what is actually saved.
+  function drawHeader() {
+    $("#av").innerHTML = `<span class="avatar xl">${state.avatar}</span>`;
+    $("#nm").textContent = state.name || state.username;
+    $("#un").innerHTML = `@${state.username} · <b style="color:var(--gold-bright)">Level ${lvl.n}</b> · ${lvl.need - lvl.into} XP to next`;
+  }
+  async function syncFromDatabase() {
+    if (!state.studentId) return;
+    const res = await GG.api.getStudent(state.studentId);
+    if (res.offline) return;
+    if (res.ok) {
+      GG.applyProfile(res.student);
+      drawHeader(); drawSkills(); drawPaths();
+      const since = new Date(res.student.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      $("#db-status").textContent = `✅ Saved in the database · member since ${since}`;
+    } else if (res.status === 404) {
+      $("#db-status").textContent = "⚠️ This account isn't in the database anymore. Sign up again to save it.";
+    } else {
+      $("#db-status").textContent = "⚠️ Database unavailable — showing the copy saved in this browser.";
+    }
+  }
+  syncFromDatabase();
 </script>
 </body>
 </html>

@@ -18,45 +18,36 @@ There are many ways to run a stand up, however most teams use the following form
 
 ## Sprint Name - Sprint 2
 
-## Stand Up Date - ____________
+## Stand Up Date - 11/13/2026
 
 *If a team member is absent, list them as absent. If they have a valid reason, like an illness, they should contact the TAs and/or instructor so they do not lose points for this stand up.*
 
 ### Update for AJ Blocker
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Verified my local PostgreSQL database with the Prisma setup (`npm run db:setup` plus the insert, read and update check) and marked it Verified in docs/database-setup.md. Reviewed the Part 3 and 4 issues (#23–#29) and closed the ones that are complete.
+2. What will I accomplish - Pull the latest main, run the new migrations and the database tests on my machine, and review the database-integrated sign-up pull request.
+3. What blockers do I have - None.
 
 ### Update for Athena Deese
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Finished the database connection check on my machine and reworked the student data model so badge progress belongs to each student instead of the shared badge list (commit cb55b40). Chose the user story for Part 5: saving a student's sign-up and skills to the database (#44).
+2. What will I accomplish - Review and demo the database-integrated sign-up feature (#44), confirm it meets the acceptance criteria, and close #22 once it is merged.
+3. What blockers do I have - None now that the database setup from parts 1–4 is merged.
 
 ### Update for Heidi Wooldridge
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Reviewed and merged the Prisma and setup-guide pull requests (#41–#43) and kept the issues and board up to date. Coordinated the Sprint 2 wrap-up: the sign-up feature, database tests, AI design review and release notes are in a pull request for team review.
+2. What will I accomplish - Run the automated tests and lint against my local test database, commit the test evidence, update the GitHub Project board, and create the R2 release (parts 7 and 8).
+3. What blockers do I have - The sign-up pull request needs a teammate's approval and merge before the release can be tagged.
 
 ### Update for Idol Hunter
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Built the Prisma schema, migration, seed script and UML diagrams for parts 1 and 2, and verified my local database.
+2. What will I accomplish - Review docs/ai-design-review.md for accuracy and render the new sign-up sequence diagram to SVG.
+3. What blockers do I have - None.
 
 ### Blockers
 
 After everyone gives updates, discuss and write down what your team will do to alleviate any blockers that came up in the meeting.
 
-&nbsp;
-
-### Board status changes since the last stand up
-
-*Optional, for our scrum evidence: log each issue that moved on the GitHub Project board and who moved it.*
-
-| Issue # | From → To | Moved by | Linked commit or PR |
-| :-- | :-- | :-- | :-- |
-| &nbsp; | | | |
-| &nbsp; | | | |
+Everyone needs the latest main on their machine before the release: `git pull`, `npm install`, `npm run db:migrate`, then create `gitgood_test` and run `npm run db:test:setup` so the database tests run locally. The steps are in docs/database-setup.md. One teammate reviews the sign-up pull request so it can merge before Heidi tags R2.
