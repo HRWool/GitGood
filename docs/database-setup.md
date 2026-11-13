@@ -72,6 +72,32 @@ ORDER BY s."createdAt" DESC;
 
 If PostgreSQL is stopped, sign-up shows "The database is not reachable right now" instead of failing silently.
 
+### Accounts created before password sign-in was added
+
+The password migration adds a nullable `passwordHash` column, so applying it preserves existing student accounts and their related data. Accounts created before password sign-in was added have no password hash and cannot sign in until their password is set. They also cannot sign up again with the same email because the account already exists.
+
+1. Back up the database. Stop the running server, then apply the schema migration and regenerate Prisma Client:
+
+   ```sh
+   npm run db:migrate
+   npm run db:generate
+   ```
+
+2. In pgAdmin's Query Tool, connected to `gitgood`, identify affected accounts. Treat the results as private account data:
+
+   ```sql
+   SELECT id, email, username
+   FROM "Student"
+   WHERE "passwordHash" IS NULL
+   ORDER BY "createdAt";
+   ```
+
+3. Verify the account owner before resetting their password. Until a verified password-reset flow is available, have the database administrator set a new password through a trusted, private process using the application's `hashPassword` helper, then store only the resulting scrypt hash in that account's `passwordHash` column. Never put a plaintext password in SQL, logs, source control, or shared messages.
+
+4. Have the account owner sign in using the new password. Do not delete and recreate the student row; existing skills and other related records belong to that account.
+
+The current app does not provide a self-service password-reset screen, so affected users need administrator assistance.
+
 ## Automated tests and the test database
 
 The database tests create and delete their own rows, so they run against a **separate** local database, never your `gitgood` data. They refuse to run unless `TEST_DATABASE_URL` points at `localhost` and the database name ends in `_test`.
