@@ -2,7 +2,7 @@
 
 This guide sets up a reproducible **local development database** for Git Good using **PostgreSQL** and the **Prisma ORM**. The tables come from the committed Prisma migration in `prisma/migrations/`, and sample data comes from `prisma/seed.js`, so every teammate gets the same schema.
 
-The browser prototype still stores its interactive state in `localStorage`. `DATABASE_URL` must only be used by server-side code (Prisma scripts, tests, or a future backend), never by browser JavaScript.
+`npm start` runs a small Node server that serves the site and the database API used by sign-up, Pick skills and Profile (issue #44). Only that server, the Prisma scripts and the tests use `DATABASE_URL`; browser JavaScript never sees it. The rest of the prototype still keeps its state in `localStorage`.
 
 ## Why PostgreSQL and Prisma
 
@@ -27,10 +27,11 @@ Each computer you develop on needs its own PostgreSQL server, role, and database
    npm install
    ```
 
-6. Copy `.env.example` to `.env` and replace `replace-with-your-local-password` with the `gitgood_app` password:
+6. Copy `.env.example` to `.env` and replace `replace-with-your-local-password` with the `gitgood_app` password (in both lines):
 
    ```
    DATABASE_URL="postgresql://gitgood_app:YOUR_PASSWORD@localhost:5432/gitgood?schema=public"
+   TEST_DATABASE_URL="postgresql://gitgood_app:YOUR_PASSWORD@localhost:5432/gitgood_test?schema=public"
    ```
 
    Keep `.env` local. Never commit it or share it in chat, issues, or screenshots.
@@ -50,6 +51,47 @@ Each computer you develop on needs its own PostgreSQL server, role, and database
    SELECT id, name FROM "Skill";
    SELECT id, title FROM "Quest";
    ```
+
+## Run the app with the database
+
+```sh
+npm start
+```
+
+Open http://localhost:8000. The terminal should say `Connected to the database.` Sign up with a `@charlotte.edu` email, pick some skills, and open Profile: under your username it says **Saved in the database · member since …**. To see the data in pgAdmin:
+
+```sql
+SELECT s.username, k.name AS skill
+FROM "Student" s
+JOIN "StudentSkill" ss ON ss."studentId" = s.id
+JOIN "Skill" k ON k.id = ss."skillId"
+ORDER BY s."createdAt" DESC;
+```
+
+**Persistence check (Part 5):** stop the server with Ctrl+C, run `npm start` again, and reload Profile: the same username and skills load from the database. For a clean browser (for example a private window), open the sign-up page, enter the same email and username, press **Create account**, then **Load my saved account**.
+
+If PostgreSQL is stopped, sign-up shows "The database is not reachable right now" instead of failing silently.
+
+## Automated tests and the test database
+
+The database tests create and delete their own rows, so they run against a **separate** local database, never your `gitgood` data. They refuse to run unless `TEST_DATABASE_URL` points at `localhost` and the database name ends in `_test`.
+
+1. In pgAdmin, create a second database named **`gitgood_test`** with owner `gitgood_app` (same steps as `gitgood`).
+2. Make sure `.env` has the `TEST_DATABASE_URL` line from step 6.
+3. Apply the migrations to it (again after pulling a new migration):
+
+   ```sh
+   npm run db:test:setup
+   ```
+
+4. Run the tests and lint:
+
+   ```sh
+   npm test
+   npm run lint
+   ```
+
+   `npm test` should end with `# pass 44` and `# fail 0`. If `TEST_DATABASE_URL` is missing or unsafe, the line `sign-up saved in PostgreSQL # SKIP …` explains why, and the other tests still run.
 
 ## Keeping your database up to date
 

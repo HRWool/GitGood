@@ -9,9 +9,10 @@ Git Good is a gamified coding-practice app, just for UNCC computing students, th
 ### ▶ Live prototype: **https://hrwool.github.io/GitGood/**
 ### 🗂 Sprint documents (standups + retro): **[Sprint Documents](Sprint%20Documents/)**
 ### ✅ Sprint 1 testing evidence: **[docs/testing-evidence.md](docs/testing-evidence.md)**
+### 🗄️ Sprint 2 database setup: **[docs/database-setup.md](docs/database-setup.md)** · AI design review: **[docs/ai-design-review.md](docs/ai-design-review.md)**
 ### 📖 Design story (storyboard + sketches): **https://hrwool.github.io/GitGood/story**
 
-This is a **clickable prototype** for collecting feedback. Every link works, and progress (XP, streak, badges) is saved in your browser. There's no backend; all data is simulated.
+This is a **clickable prototype** for collecting feedback. Every link works, and progress (XP, streak, badges) is saved in your browser. When you run it locally with `npm start`, sign-up, chosen skills and the Profile screen are saved in and loaded from a PostgreSQL database (Sprint 2, #44). The GitHub Pages site has no server, so there everything stays in the browser.
 
 - On a laptop, the app sits inside a phone frame. The left panel jumps to any screen, and the right panel lists feedback questions for that screen.
 - On a phone, it runs full-screen. Tap **☰ Screens** to jump around.
@@ -64,14 +65,26 @@ We share the Scrum roles instead of giving each one to a single person. Every me
 Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 - `css/style.css`: design tokens and components (UNCC green `#005035` and gold `#B3A369`, plus brighter accents)
 - `js/data.js`: seed data (quests, classrooms, badges, leaderboards, screen list) and the daily-quest filter
-- `js/app.js`: shared state (localStorage), bottom nav, demo panels, toasts, sheets, confetti
+- `js/app.js`: shared state (localStorage), the `GG.api` client for the database API, bottom nav, demo panels, toasts, sheets, confetti
+- `server/`: a small Node server (`npm start`) that serves the site and a JSON API. `server/students.js` is the data-access layer; it uses the Prisma client to read and write PostgreSQL
+- `prisma/`: the Prisma schema, migrations, seed and connection check
 - `tests/`: unit tests that use Node's built-in test runner
 - `eslint.config.mjs`: lint rules for `js/` and the inline scripts in every page
 
 
 
 ### Data model
-There's no backend yet. The clickable prototype stores progress in localStorage. The PostgreSQL/Prisma starting schema is in [`prisma/schema.prisma`](prisma/schema.prisma); it models the persistent entities and relationships a future backend would need. These objects in `js/data.js` are the current simulated data:
+The PostgreSQL/Prisma schema is in [`prisma/schema.prisma`](prisma/schema.prisma) (30 models, applied by the migration in `prisma/migrations/`). Sprint 2 connects the first user story to it: **sign-up and skills (#44)** are saved as `Student`, `Skill` and `StudentSkill` rows through these API routes:
+
+| Route | What it does |
+|---|---|
+| `POST /api/students` | Validates and creates a student (UNCC email, 3–18 character username, avatar). 400 for invalid input, 409 if the email or username is taken. |
+| `PUT /api/students/:id/skills` | Replaces the student's skills. Built-in skills reuse shared `Skill` rows; custom skills become the student's own `Skill`. |
+| `GET /api/students/:id` | Loads the profile and skills (used by the Profile screen). |
+| `GET /api/students?email=` | Finds a saved account by email ("Load my saved account" on the sign-up screen). |
+| `GET /api/health` | Reports whether the database is reachable. |
+
+If PostgreSQL is down, the API answers 503 and the screens show a message. Everything else in the prototype is still simulated in localStorage. These objects in `js/data.js` are that simulated data:
 - **Student state** (`DEFAULT_STATE` / `FRESH_STATE`) contains `onboarded`, `fresh`, `name`, `username`, `email`, `avatar`, selected `skills`, `xp`, `classXp`, current `streak`, `bestStreak`, the seven-day Monday-to-Sunday `week` array, `freezes`, earned badge IDs and `earnedOn` dates, `justUnlocked`, `newBadge`, pinned badge IDs, `doneToday` quest IDs, `classDone` quest IDs, `questsTotal`, per-student `badgeProgress`, `joinedClass`, notification `prefs` (`streak`, `quest`, `leaderboard`), friend `invites` / `accepted` / `pending` lists, and `lastRankMove` (`from` / `to`). Pending invites contain `name` and `sentOn`. `js/app.js` loads, updates, and saves this shared state in localStorage; badge definitions contain no student-specific progress.
 - **Skill** (`SKILLS`): `id` and `icon`.
 - **Quest** (`QUESTS`): `title`, `skill`, `level`, `xp`, `minutes`, `practiced` concepts, `icon`, customer `speaker` (`name`, `who`, `role`) and `story`, exercise `prompt`, `code`, accepted `answers`, `tests`, `hint`, and optional `acceptAny`, `timed`, `badge`, `next`, `classQuest`, and `fromLeaderboard` fields. `DAILY` stores quest IDs.
@@ -80,36 +93,24 @@ There's no backend yet. The clickable prototype stores progress in localStorage.
 
 XP totals, streaks, ranks, and badge progress are intended to be derived from dated activity and transaction records rather than stored as independent counters. The schema provides relations and uniqueness constraints; domain checks that span multiple rows (such as the three-quest daily limit, badge pin limit, friendship-pair ordering, valid classroom completion, and nonnegative inventory balances) must be enforced transactionally by the future backend. Normalize emails, usernames, and custom skill names before writes. Learning paths and leaderboard snapshots are included as schema support for the screens' existing previews.
 
-UML documentation: [domain class diagram](docs/uml/class-diagram.svg) ([PlantUML source](docs/uml/class-diagram.puml)) and [start-quiz sequence diagram](docs/uml/sequence-start-quiz.svg) ([PlantUML source](docs/uml/sequence-start-quiz.puml)). The sequence shows a future backend interaction; the prototype does not currently persist to Prisma.
+UML documentation: [domain class diagram](docs/uml/class-diagram.svg) ([PlantUML source](docs/uml/class-diagram.puml)), the [save-sign-up sequence diagram](docs/uml/sequence-save-signup.svg) for the implemented story ([PlantUML source](docs/uml/sequence-save-signup.puml)), and the planned [start-quiz sequence diagram](docs/uml/sequence-start-quiz.svg) ([PlantUML source](docs/uml/sequence-start-quiz.puml)). AI-generated design decisions we reviewed and corrected are in [docs/ai-design-review.md](docs/ai-design-review.md).
 
 ## Run it locally
-You need a web browser and Python 3 to serve the site. Node.js 18+ is needed for linting, tests, and optional Prisma setup.
+You need Node.js 18+ and PostgreSQL. Set up the database once by following [docs/database-setup.md](docs/database-setup.md), then:
 
 ```bash
 git clone https://github.com/HRWool/GitGood.git
 cd GitGood
-python3 -m http.server 8000     # or: npm start
-```
-Then open http://localhost:8000. Nothing else needs installing to run the app.
-
-Install the project tools:
-```bash
 npm install
+cp .env.example .env    # then put your local gitgood_app password in .env (keep it private)
+npm run db:setup        # generate the Prisma client, apply migrations, seed, check the connection
+npm start               # site + database API
 ```
+Open http://localhost:8000 and sign up. Your account and skills are saved in PostgreSQL; the Profile screen says **"Saved in the database"**. Stop the server (Ctrl+C) and run `npm start` again: the account is still there. On a cleared browser, enter the same email on the sign-up screen and press **Load my saved account**.
 
-### Optional local PostgreSQL database
+To look at the screens without a database, `npm run start:static` (Python 3) serves the site the way GitHub Pages does, with everything saved in the browser.
 
-The clickable prototype still uses `localStorage`; this setup initializes the Prisma schema and sample data for local development.
-
-1. Follow [docs/database-setup.md](docs/database-setup.md) to create the gitgood_app role and the gitgood database.
-2. Copy `.env.example` to `.env` and set `DATABASE_URL` to your local PostgreSQL connection string. Keep `.env` private; it is ignored by Git.
-3. Install dependencies with `npm install`, then run:
-
-```bash
-npm run db:setup
-```
-
-This generates Prisma Client, applies development migrations, seeds an example student/skill/quest, and verifies a database query. The seed command refuses to run unless the database is named `gitgood` and hosted on localhost. Individual commands are `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, and `npm run db:check`.
+`npm run db:setup` refuses to seed anything but a local database named `gitgood`. Individual commands are `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, and `npm run db:check`.
 
 ## Implemented features (Sprint 1)
 | Issue | Feature | Pull request |
@@ -130,6 +131,10 @@ npm run lint      # ESLint; must report 0 problems
 ```
 - `tests/skills-practiced.test.js` (#1): every quest has a known skill and a non-empty, unique list of practiced concepts.
 - `tests/daily-quests.test.js` (#3): only selected skills are used, several skills take turns, the 3-a-day cap holds, changing skills updates the quests, and custom, unknown or missing skills are ignored.
+- `tests/student-validation.test.js` (#44): sign-up and skill validation (UNCC email, username rules, skill list limits), and that the server's skills and avatars match the screens.
+- `tests/students-api.test.js` (#44): against a real PostgreSQL **test** database: creating a student and reading it back on a new connection, duplicate email/username (409), saving built-in and custom skills, invalid skills leaving data unchanged, not-found lookups, and the full sign-up → skills → profile API flow. Error handling that runs without any database: 503 when PostgreSQL is down, 400 for invalid input and malformed JSON.
+
+The database tests need a separate local database named `gitgood_test` (see [docs/database-setup.md](docs/database-setup.md#automated-tests-and-the-test-database)); without it they are skipped and everything else still runs.
 
 **Manual (acceptance criteria)**
 1. **#1:** Open `exercise.html?q=first`, type `orders` and `+=`, and press Run. The reward screen shows **Skills practiced: Python · for loops · lists · running totals** and stays open until you press Continue.

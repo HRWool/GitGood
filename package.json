@@ -3,13 +3,15 @@
   "description": "Git Good clickable prototype (ITSC 3155 Group 7)",
   "scripts": {
     "lint": "eslint . --max-warnings=0",
-    "start": "python3 -m http.server 8000",
+    "start": "node server/index.js",
+    "start:static": "python3 -m http.server 8000",
     "test": "node --test \"tests/*.test.js\"",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js",
     "db:check": "node prisma/check-connection.js",
-    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed && npm run db:check"
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed && npm run db:check",
+    "db:test:setup": "node prisma/setup-test-db.js"
   },
   "repository": {
     "type": "git",

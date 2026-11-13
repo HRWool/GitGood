@@ -35,8 +35,8 @@ export default [
     languageOptions: { globals: { ...globals.node } },
   },
   {
-    // Prisma utilities run directly in Node.
-    files: ["prisma/**/*.js"],
+    // Prisma utilities and the local API server run directly in Node.
+    files: ["prisma/**/*.js", "server/**/*.js"],
     languageOptions: { globals: { ...globals.node } },
   },
 ];

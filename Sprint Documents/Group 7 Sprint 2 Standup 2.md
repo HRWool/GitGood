@@ -18,45 +18,36 @@ There are many ways to run a stand up, however most teams use the following form
 
 ## Sprint Name - Sprint 2
 
-## Stand Up Date - ____________
+## Stand Up Date - 11/10/2026
 
 *If a team member is absent, list them as absent. If they have a valid reason, like an illness, they should contact the TAs and/or instructor so they do not lose points for this stand up.*
 
 ### Update for AJ Blocker
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Setup and configure the database for team collaboration as stated in part 3 of the sprint 2 document. Protect the database credentials and secrets in the .gitignore file, and make sure that the required files (.gitignore, env.example) are pushed and .env is private as stated in part 3 of the sprint 2 document.
+2. What will I accomplish - Go through the different issues we made individually on Github and close out specific issues that’s already completed.
+3. What blockers do I have - Some parts of the document in the sprint 2 are not yet completed for the issues to be closed yet.
 
 ### Update for Athena Deese
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Set up GitHub issues for each individual part of what we are getting done this sprint. This was part of my responsibilities for this sprint. I also validated my local database within our system.
+2. What will I accomplish - I need to implement the user story, in this case it is to implement the database into our program.
+3. What blockers do I have - I haven’t had the time to really get it done yet due to the fact that others needed to get their parts done first.
 
 ### Update for Heidi Wooldridge
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Set up my local database according to the approved setup in database-setup.md. Made sure I was verified in the repository documentation and participated in review/approval functions in the repo.
+2. What will I accomplish - I will begin working on my portion of this sprint (Step 7 & 8). To be completed once parts 5 & 6 are complete, since the sprint is linear.
+3. What blockers do I have - The completion of step 5 & 6
 
 ### Update for Idol Hunter
 
-1. What have I accomplished -
-2. What will I accomplish -
-3. What blockers do I have -
+1. What have I accomplished - Picked and implemented a database for our project
+2. What will I accomplish - Set up a working cloud database
+3. What blockers do I have - My overall understanding of how our database and Prisma works is not that good
 
 ### Blockers
 
 After everyone gives updates, discuss and write down what your team will do to alleviate any blockers that came up in the meeting.
 
-&nbsp;
-
-### Board status changes since the last stand up
-
-*Optional, for our scrum evidence: log each issue that moved on the GitHub Project board and who moved it.*
-
-| Issue # | From → To | Moved by | Linked commit or PR |
-| :-- | :-- | :-- | :-- |
-| &nbsp; | | | |
-| &nbsp; | | | |
+We all need a better understanding of how the database actually works and how to update it between each use.

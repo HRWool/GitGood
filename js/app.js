@@ -39,7 +39,7 @@ const GG = (() => {
   }
   // Jump a new user one week ahead so the leaderboard/streak screens have real-looking data.
   function fastForward() {
-    const keep = { name: state.name, username: state.username, email: state.email, avatar: state.avatar, skills: state.skills };
+    const keep = { name: state.name, username: state.username, email: state.email, avatar: state.avatar, skills: state.skills, studentId: state.studentId, savedAt: state.savedAt };
     Object.keys(state).forEach((k) => delete state[k]);
     Object.assign(state, clone(DEFAULT_STATE));
     Object.entries(keep).forEach(([k, v]) => { if (v && (!Array.isArray(v) || v.length)) state[k] = v; });
@@ -386,6 +386,56 @@ const GG = (() => {
     };
   }
 
+  // ---------- database API (issue #44) ----------
+  // When the site runs through `npm start`, sign-up, skills and profile are saved in PostgreSQL
+  // via /api. On GitHub Pages (no server) every call resolves to { offline: true } and the
+  // prototype keeps using localStorage only.
+  let apiCheck = null;
+  function apiAvailable() {
+    if (!apiCheck) {
+      apiCheck = (typeof fetch !== "function" || !/^https?:$/.test(location.protocol))
+        ? Promise.resolve(false)
+        : fetch("/api/health", { cache: "no-store" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((body) => Boolean(body && body.ok))
+          .catch(() => false);
+    }
+    return apiCheck;
+  }
+  async function apiCall(method, url, body) {
+    if (!(await apiAvailable())) return { offline: true };
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, ...data };
+    } catch {
+      return { ok: false, status: 0, error: "Couldn't reach the Git Good server. Is `npm start` still running?" };
+    }
+  }
+  const api = {
+    available: apiAvailable,
+    createStudent: (profile) => apiCall("POST", "/api/students", profile),
+    getStudent: (id) => apiCall("GET", `/api/students/${encodeURIComponent(id)}`),
+    findByEmail: (email) => apiCall("GET", `/api/students?email=${encodeURIComponent(email)}`),
+    saveSkills: (id, skills) => apiCall("PUT", `/api/students/${encodeURIComponent(id)}/skills`, { skills }),
+  };
+  // Copy a profile returned by the API into the local state used by every screen.
+  function applyProfile(student) {
+    Object.assign(state, {
+      studentId: student.id,
+      email: student.email,
+      username: student.username,
+      avatar: student.avatar,
+      skills: student.skills.map((s) => s.name),
+      savedAt: student.createdAt,
+    });
+    save();
+  }
+
   function init() {
     injectStatusbar();
     injectTabbar();
@@ -398,7 +448,7 @@ const GG = (() => {
   else init();
 
   return {
-    state, save, startFresh, restart, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
+    state, save, startFresh, api, applyProfile, restart, fastForward, normalizeFriendName, inviteFriend, friendBoardList, level, displayName, firstName, badge, earned, badgeProgress,
     ranked, appRank, today, dailyQuests, doneDaily, unlockBadge, completeQuest, addXP,
     $, $$, badgeHTML, avatarHTML, toast, openSheet, closeSheet, openModal, closeModal, confettiBurst, countUp, animateBars, copy, siteURL,
   };
