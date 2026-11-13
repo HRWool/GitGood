@@ -71,7 +71,7 @@ function isDatabaseUnavailable(err) {
 function sendError(res, err) {
   if (err instanceof students.ValidationError || err instanceof students.ConflictError) {
     sendJson(res, err.status, { error: err.message, errors: err.errors });
-  } else if (err instanceof students.NotFoundError || err instanceof HttpError) {
+  } else if (err instanceof students.NotFoundError || err instanceof students.AuthenticationError || err instanceof HttpError) {
     sendJson(res, err.status, { error: err.message });
   } else if (isDatabaseUnavailable(err)) {
     sendJson(res, 503, { error: "The database is not reachable right now. Check that PostgreSQL is running and try again." });
@@ -94,16 +94,16 @@ async function handleApi(prisma, req, res, url) {
     }
   }
 
+  if (parts[1] === "auth" && parts[2] === "login" && parts.length === 3 && method === "POST") {
+    const body = await readJson(req);
+    return sendJson(res, 200, { student: await students.authenticateStudent(prisma, body) });
+  }
+
   if (parts[1] !== "students") throw new HttpError(404, "Unknown API route.");
 
   if (parts.length === 2 && method === "POST") {
     const body = await readJson(req);
     return sendJson(res, 201, { student: await students.createStudent(prisma, body) });
-  }
-  if (parts.length === 2 && method === "GET") {
-    const email = url.searchParams.get("email");
-    if (!email) throw new students.ValidationError({ email: "Add ?email= to look up an account." });
-    return sendJson(res, 200, { student: await students.findStudentByEmail(prisma, email) });
   }
   if (parts.length === 3 && method === "GET") {
     return sendJson(res, 200, { student: await students.getStudent(prisma, parts[2]) });

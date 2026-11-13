@@ -90,6 +90,7 @@ enum LeaderboardScope {
 model Student {
   id                    String    @id @default(cuid())
   email                 String    @unique @db.VarChar(254)
+  passwordHash          String?   @db.VarChar(128)
   username              String    @unique @db.VarChar(18)
   displayName           String?   @db.VarChar(80)
   avatar                String    @default("🦊") @db.VarChar(16)

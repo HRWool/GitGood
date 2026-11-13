@@ -46,7 +46,7 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
   });
 
   test("creating a student saves it and a new client reads it back", async () => {
-    const created = await students.createStudent(prisma, { email: email("Ava").toUpperCase(), username: username("ava"), avatar: "🦉" });
+    const created = await students.createStudent(prisma, { email: email("Ava").toUpperCase(), username: username("ava"), avatar: "🦉", password: "ava-password" });
     assert.equal(created.email, email("ava"));
     assert.deepEqual(created.skills, []);
 
@@ -56,26 +56,27 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
       const row = await restarted.student.findUnique({ where: { id: created.id } });
       assert.equal(row.username, username("ava"));
       assert.equal(row.avatar, "🦉");
+      assert.notEqual(row.passwordHash, "ava-password");
     } finally {
       await restarted.$disconnect();
     }
   });
 
   test("a duplicate email or username is rejected and nothing extra is saved", async () => {
-    await students.createStudent(prisma, { email: email("ben"), username: username("ben") });
+    await students.createStudent(prisma, { email: email("ben"), username: username("ben"), password: "ben-password" });
     await assert.rejects(
-      students.createStudent(prisma, { email: email("ben"), username: username("ben2") }),
+      students.createStudent(prisma, { email: email("ben"), username: username("ben2"), password: "ben-password" }),
       (err) => err instanceof students.ConflictError && Boolean(err.errors.email),
     );
     await assert.rejects(
-      students.createStudent(prisma, { email: email("ben3"), username: username("ben") }),
+      students.createStudent(prisma, { email: email("ben3"), username: username("ben"), password: "ben-password" }),
       (err) => err instanceof students.ConflictError && Boolean(err.errors.username),
     );
     assert.equal(await prisma.student.count({ where: { email: { in: [email("ben"), email("ben3")] } } }), 1);
   });
 
   test("saving skills links built-in skills and creates the student's custom skill", async () => {
-    const student = await students.createStudent(prisma, { email: email("cam"), username: username("cam") });
+    const student = await students.createStudent(prisma, { email: email("cam"), username: username("cam"), password: "cam-password" });
     const saved = await students.setStudentSkills(prisma, student.id, ["Java", "sql", "Project management"]);
     assert.deepEqual(saved.skills.map((s) => [s.name, s.custom]), [["Java", false], ["SQL", false], ["Project management", true]]);
 
@@ -86,7 +87,7 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
   });
 
   test("invalid skills leave the saved skills unchanged", async () => {
-    const student = await students.createStudent(prisma, { email: email("dee"), username: username("dee") });
+    const student = await students.createStudent(prisma, { email: email("dee"), username: username("dee"), password: "dee-password" });
     await students.setStudentSkills(prisma, student.id, ["Web"]);
     await assert.rejects(students.setStudentSkills(prisma, student.id, []), students.ValidationError);
     await assert.rejects(students.setStudentSkills(prisma, student.id, ["x".repeat(30)]), students.ValidationError);
@@ -96,13 +97,19 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
   test("looking up a student that does not exist is a not-found error", async () => {
     await assert.rejects(students.getStudent(prisma, "no-such-student"), students.NotFoundError);
     await assert.rejects(students.setStudentSkills(prisma, "no-such-student", ["Java"]), students.NotFoundError);
-    await assert.rejects(students.findStudentByEmail(prisma, email("nobody")), students.NotFoundError);
   });
 
-  test("API: sign up, pick skills, then load the profile by id and by email", async () => {
-    const signup = await api.call("POST", "/api/students", { email: email("eli"), username: username("eli"), avatar: "🐙" });
+  test("API: sign up, sign in, and save selected skills", async () => {
+    const signup = await api.call("POST", "/api/students", { email: email("eli"), username: username("eli"), avatar: "🐙", password: "eli-password" });
     assert.equal(signup.status, 201);
     const { id } = signup.body.student;
+    assert.equal("passwordHash" in signup.body.student, false);
+
+    const login = await api.call("POST", "/api/auth/login", { email: email("eli"), password: "eli-password" });
+    assert.equal(login.status, 200);
+    assert.equal(login.body.student.id, id);
+    const denied = await api.call("POST", "/api/auth/login", { email: email("eli"), password: "wrong-password" });
+    assert.equal(denied.status, 401);
 
     const skills = await api.call("PUT", `/api/students/${id}/skills`, { skills: ["Git", "DSA"] });
     assert.equal(skills.status, 200);
@@ -113,9 +120,6 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
     assert.equal(byId.body.student.username, username("eli"));
     assert.deepEqual(byId.body.student.skills.map((s) => s.name), ["Git", "DSA"]);
 
-    const byEmail = await api.call("GET", `/api/students?email=${encodeURIComponent(email("ELI"))}`);
-    assert.equal(byEmail.status, 200);
-    assert.equal(byEmail.body.student.id, id);
   });
 
   test("API: invalid and duplicate sign-ups get 400 and 409 with field messages", async () => {
@@ -123,8 +127,8 @@ test.describe("sign-up saved in PostgreSQL", { skip }, () => {
     assert.equal(bad.status, 400);
     assert.ok(bad.body.errors.email && bad.body.errors.username);
 
-    await api.call("POST", "/api/students", { email: email("fay"), username: username("fay") });
-    const dup = await api.call("POST", "/api/students", { email: email("fay"), username: username("fay") });
+    await api.call("POST", "/api/students", { email: email("fay"), username: username("fay"), password: "fay-password" });
+    const dup = await api.call("POST", "/api/students", { email: email("fay"), username: username("fay"), password: "fay-password" });
     assert.equal(dup.status, 409);
     assert.ok(dup.body.errors.email && dup.body.errors.username);
 
@@ -141,7 +145,13 @@ test.describe("API error handling without a database", () => {
   test.after(async () => { await api.close(); await offline.$disconnect(); });
 
   test("sign-up returns 503 with a clear message when the database is down", async () => {
-    const res = await api.call("POST", "/api/students", { email: "gus@charlotte.edu", username: "gus_test" });
+    const res = await api.call("POST", "/api/students", { email: "gus@charlotte.edu", username: "gus_test", password: "gus-password" });
+    assert.equal(res.status, 503);
+    assert.match(res.body.error, /database is not reachable/);
+  });
+
+  test("sign-in returns 503 with a clear message when the database is down", async () => {
+    const res = await api.call("POST", "/api/auth/login", { email: "gus@charlotte.edu", password: "gus-password" });
     assert.equal(res.status, 503);
     assert.match(res.body.error, /database is not reachable/);
   });

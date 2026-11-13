@@ -8,7 +8,7 @@ import globals from "globals";
 // Globals defined in js/data.js and js/app.js and shared by every page.
 const shared = Object.fromEntries(
   ["SKILLS", "AVATARS", "DEFAULT_STATE", "FRESH_STATE", "BADGES", "QUESTS", "DAILY",
-    "CLASSES", "LB_APP", "LB_CLASS", "LB_FRIENDS", "FEED", "PAGES", "GG", "dailyQuestsFor", "answerIsAccepted"]
+    "CLASSES", "LB_APP", "LB_CLASS", "LB_FRIENDS", "FEED", "PAGES", "GG", "dailyQuestsFor", "firstQuestFor", "answerIsAccepted"]
     .map((name) => [name, "readonly"])
 );
 

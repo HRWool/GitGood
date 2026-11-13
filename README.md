@@ -12,7 +12,7 @@ Git Good is a gamified coding-practice app, just for UNCC computing students, th
 ### 🗄️ Sprint 2 database setup: **[docs/database-setup.md](docs/database-setup.md)** · AI design review: **[docs/ai-design-review.md](docs/ai-design-review.md)**
 ### 📖 Design story (storyboard + sketches): **https://hrwool.github.io/GitGood/story**
 
-This is a **clickable prototype** for collecting feedback. Every link works, and progress (XP, streak, badges) is saved in your browser. When you run it locally with `npm start`, sign-up, chosen skills and the Profile screen are saved in and loaded from a PostgreSQL database (Sprint 2, #44). The GitHub Pages site has no server, so there everything stays in the browser.
+This is a **clickable prototype** for collecting feedback. Choose a database account, create a new account, or explicitly continue as the Maya demo before opening the app. Regular account sign-in and sign-up use PostgreSQL through `npm start`; passwords are stored as scrypt hashes. Progress (XP, streak, badges) is saved in your browser. On GitHub Pages, only the Maya demo is available because that static site has no database server.
 
 - On a laptop, the app sits inside a phone frame. The left panel jumps to any screen, and the right panel lists feedback questions for that screen.
 - On a phone, it runs full-screen. Tap **☰ Screens** to jump around.
@@ -22,7 +22,7 @@ This is a **clickable prototype** for collecting feedback. Every link works, and
 
 | # | Screen | What to try |
 |---|---|---|
-| 1 | [Welcome](https://hrwool.github.io/GitGood/) | Get started |
+| 1 | [Welcome](https://hrwool.github.io/GitGood/) | Choose **Continue as demo · Maya**, sign in, or create an account |
 | 2 | [Sign up](https://hrwool.github.io/GitGood/signup.html) | Try a `@gmail.com` email (rejected), then a `@charlotte.edu` one |
 | 3 | [Pick skills](https://hrwool.github.io/GitGood/skills.html) | Choose skills, add a custom one |
 | 4 | [First quest](https://hrwool.github.io/GitGood/quiz-intro.html) | Customer-story intro (skippable) |
@@ -74,18 +74,18 @@ Plain HTML, CSS and vanilla JS with no build step, hosted on GitHub Pages.
 
 
 ### Data model
-The PostgreSQL/Prisma schema is in [`prisma/schema.prisma`](prisma/schema.prisma) (30 models, applied by the migration in `prisma/migrations/`). Sprint 2 connects the first user story to it: **sign-up and skills (#44)** are saved as `Student`, `Skill` and `StudentSkill` rows through these API routes:
+The PostgreSQL/Prisma schema is in [`prisma/schema.prisma`](prisma/schema.prisma) (30 models, applied by the migrations in `prisma/migrations/`). Sign-up and sign-in use PostgreSQL accounts; skills are saved as `Student`, `Skill` and `StudentSkill` rows through these API routes:
 
 | Route | What it does |
 |---|---|
-| `POST /api/students` | Validates and creates a student (UNCC email, 3–18 character username, avatar). 400 for invalid input, 409 if the email or username is taken. |
+| `POST /api/students` | Validates and creates a student (UNCC email, 3–18 character username, avatar, and 8–128 character password); password hashes are stored, never plaintext. 400 for invalid input, 409 if the email or username is taken. |
+| `POST /api/auth/login` | Verifies the email and password against the account in PostgreSQL. |
 | `PUT /api/students/:id/skills` | Replaces the student's skills. Built-in skills reuse shared `Skill` rows; custom skills become the student's own `Skill`. |
 | `GET /api/students/:id` | Loads the profile and skills (used by the Profile screen). |
-| `GET /api/students?email=` | Finds a saved account by email ("Load my saved account" on the sign-up screen). |
 | `GET /api/health` | Reports whether the database is reachable. |
 
 If PostgreSQL is down, the API answers 503 and the screens show a message. Everything else in the prototype is still simulated in localStorage. These objects in `js/data.js` are that simulated data:
-- **Student state** (`DEFAULT_STATE` / `FRESH_STATE`) contains `onboarded`, `fresh`, `name`, `username`, `email`, `avatar`, selected `skills`, `xp`, `classXp`, current `streak`, `bestStreak`, the seven-day Monday-to-Sunday `week` array, `freezes`, earned badge IDs and `earnedOn` dates, `justUnlocked`, `newBadge`, pinned badge IDs, `doneToday` quest IDs, `classDone` quest IDs, `questsTotal`, per-student `badgeProgress`, `joinedClass`, notification `prefs` (`streak`, `quest`, `leaderboard`), friend `invites` / `accepted` / `pending` lists, and `lastRankMove` (`from` / `to`). Pending invites contain `name` and `sentOn`. `js/app.js` loads, updates, and saves this shared state in localStorage; badge definitions contain no student-specific progress.
+- **Student state** (`DEFAULT_STATE` / `FRESH_STATE`) contains `onboarded`, the explicit `authenticated` session flag, `fresh`, `name`, `username`, `email`, `avatar`, selected `skills`, `xp`, `classXp`, current `streak`, `bestStreak`, the seven-day Monday-to-Sunday `week` array, `freezes`, earned badge IDs and `earnedOn` dates, `justUnlocked`, `newBadge`, pinned badge IDs, `doneToday` quest IDs, `classDone` quest IDs, `questsTotal`, per-student `badgeProgress`, `joinedClass`, notification `prefs` (`streak`, `quest`, `leaderboard`), friend `invites` / `accepted` / `pending` lists, and `lastRankMove` (`from` / `to`). Pending invites contain `name` and `sentOn`. `js/app.js` loads, updates, and saves this shared state in localStorage; badge definitions contain no student-specific progress.
 - **Skill** (`SKILLS`): `id` and `icon`.
 - **Quest** (`QUESTS`): `title`, `skill`, `level`, `xp`, `minutes`, `practiced` concepts, `icon`, customer `speaker` (`name`, `who`, `role`) and `story`, exercise `prompt`, `code`, accepted `answers`, `tests`, `hint`, and optional `acceptAny`, `timed`, `badge`, `next`, `classQuest`, and `fromLeaderboard` fields. `DAILY` stores quest IDs.
 - **Badge** (`BADGES`): `id`, `name`, `icon`, `type`, `requirement`, and `slug`; progress badges also have a numeric `goal` and optional `track`. The student's current amount is held in `state.badgeProgress` or derived from the student's streak.
@@ -106,9 +106,9 @@ cp .env.example .env    # then put your local gitgood_app password in .env (keep
 npm run db:setup        # generate the Prisma client, apply migrations, seed, check the connection
 npm start               # site + database API
 ```
-Open http://localhost:8000 and sign up. Your account and skills are saved in PostgreSQL; the Profile screen says **"Saved in the database"**. Stop the server (Ctrl+C) and run `npm start` again: the account is still there. On a cleared browser, enter the same email on the sign-up screen and press **Load my saved account**.
+Open http://localhost:8000 and create an account. Your account and password hash are saved in PostgreSQL; sign out and sign back in to verify the credentials. The Profile screen says **"Saved in the database"**. Stop the server (Ctrl+C) and run `npm start` again: the account is still there.
 
-To look at the screens without a database, `npm run start:static` (Python 3) serves the site the way GitHub Pages does, with everything saved in the browser.
+To look at the screens without a database, `npm run start:static` (Python 3) serves the site the way GitHub Pages does. Choose the Maya demo; database sign-in and account creation require `npm start`.
 
 `npm run db:setup` refuses to seed anything but a local database named `gitgood`. Individual commands are `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, and `npm run db:check`.
 

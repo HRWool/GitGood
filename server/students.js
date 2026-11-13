@@ -1,11 +1,17 @@
 // Data-access layer for the "save my sign-up" user story (issue #44).
 // Every function takes a PrismaClient so the server and the tests can pass in
 // their own client (the tests use a separate gitgood_test database).
+const { promisify } = require("node:util");
+const { randomBytes, scrypt: scryptCallback, timingSafeEqual } = require("node:crypto");
+const scrypt = promisify(scryptCallback);
 
 const UNCC_EMAIL = /^[^\s@]+@(charlotte|uncc)\.edu$/i;
 const USERNAME = /^[a-z0-9_]{3,18}$/i;
 const MAX_SKILLS = 12;
 const MAX_SKILL_NAME = 24;
+const PASSWORD_BYTES = 64;
+const SCRYPT_COST = 16384;
+const DUMMY_PASSWORD_HASH = `scrypt$${SCRYPT_COST}$${Buffer.alloc(16).toString("base64url")}$${Buffer.alloc(PASSWORD_BYTES).toString("base64url")}`;
 
 // Same built-in skills as SKILLS in js/data.js (a test keeps the two in sync).
 const BUILT_IN_SKILLS = [
@@ -47,6 +53,14 @@ class NotFoundError extends Error {
   }
 }
 
+class AuthenticationError extends Error {
+  constructor() {
+    super("Email or password is incorrect.");
+    this.name = "AuthenticationError";
+    this.status = 401;
+  }
+}
+
 const normalize = (value) => value.trim().replace(/\s+/g, " ").toLowerCase();
 
 function validateEmail(value) {
@@ -69,9 +83,28 @@ function validateSignup(input) {
 
   const avatar = body.avatar === undefined ? AVATARS[0] : body.avatar;
   if (!AVATARS.includes(avatar)) errors.avatar = "Pick one of the avatars shown.";
+  const password = typeof body.password === "string" ? body.password : "";
+  if (password.length < 8 || password.length > 128) errors.password = "Use a password between 8 and 128 characters.";
 
   if (Object.keys(errors).length) throw new ValidationError(errors);
-  return { email, username, avatar };
+  return { email, username, avatar, password };
+}
+
+async function hashPassword(password) {
+  const salt = randomBytes(16);
+  const derived = await scrypt(password, salt, PASSWORD_BYTES, { N: SCRYPT_COST });
+  return `scrypt$${SCRYPT_COST}$${salt.toString("base64url")}$${derived.toString("base64url")}`;
+}
+
+async function verifyPassword(password, encoded) {
+  if (typeof password !== "string" || typeof encoded !== "string") return false;
+  const [algorithm, cost, saltText, hashText, extra] = encoded.split("$");
+  if (algorithm !== "scrypt" || Number(cost) !== SCRYPT_COST || !saltText || !hashText || extra !== undefined) return false;
+  const salt = Buffer.from(saltText, "base64url");
+  const expected = Buffer.from(hashText, "base64url");
+  if (salt.length !== 16 || expected.length !== PASSWORD_BYTES) return false;
+  const actual = await scrypt(password, salt, PASSWORD_BYTES, { N: SCRYPT_COST });
+  return timingSafeEqual(actual, expected);
 }
 
 function validateSkills(value) {
@@ -127,25 +160,30 @@ async function createStudent(prisma, input) {
   if (byUsername) errors.username = "That username is taken. Try another one.";
   if (Object.keys(errors).length) throw new ConflictError(errors);
 
+  const passwordHash = await hashPassword(data.password);
+  const profileData = { email: data.email, username: data.username, avatar: data.avatar, passwordHash };
   try {
-    const student = await prisma.student.create({ data, include: profileInclude });
+    const student = await prisma.student.create({ data: profileData, include: profileInclude });
     return toProfile(student);
   } catch (err) {
     throw conflictFromPrisma(err) || err;
   }
 }
 
+async function authenticateStudent(prisma, input) {
+  const body = input && typeof input === "object" ? input : {};
+  const email = validateEmail(body.email);
+  const password = typeof body.password === "string" ? body.password : "";
+  const student = await prisma.student.findUnique({ where: { email }, include: profileInclude });
+  const validPassword = await verifyPassword(password, student ? student.passwordHash : DUMMY_PASSWORD_HASH);
+  if (!student || !validPassword) throw new AuthenticationError();
+  return toProfile(student);
+}
+
 async function getStudent(prisma, id) {
   if (typeof id !== "string" || !id || id.length > 64) throw new NotFoundError();
   const student = await prisma.student.findUnique({ where: { id }, include: profileInclude });
   if (!student) throw new NotFoundError();
-  return toProfile(student);
-}
-
-async function findStudentByEmail(prisma, rawEmail) {
-  const email = validateEmail(rawEmail);
-  const student = await prisma.student.findUnique({ where: { email }, include: profileInclude });
-  if (!student) throw new NotFoundError("No account uses that email yet.");
   return toProfile(student);
 }
 
@@ -183,14 +221,17 @@ async function setStudentSkills(prisma, id, rawSkills) {
 
 module.exports = {
   AVATARS,
+  AuthenticationError,
   BUILT_IN_SKILLS,
   ConflictError,
   NotFoundError,
   ValidationError,
   createStudent,
-  findStudentByEmail,
+  authenticateStudent,
   getStudent,
   setStudentSkills,
   validateSignup,
   validateSkills,
+  hashPassword,
+  verifyPassword,
 };
