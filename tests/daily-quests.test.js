@@ -22,6 +22,43 @@ test("every built-in skill has at least one daily quest", () => {
   for (const s of SKILLS) assert.ok(DAILY.some((id) => QUESTS[id].skill === s.id), `no daily quest for ${s.id}`);
 });
 
+test("every built-in skill has at least four additional daily quests", () => {
+  for (const s of SKILLS) {
+    const quests = DAILY.filter((id) => QUESTS[id].skill === s.id);
+    assert.ok(quests.length >= 5, `${s.id} has only ${quests.length} daily quests; expected at least 5 total`);
+  }
+});
+
+test("beginner concept quests cover every implemented skill", () => {
+  const beginnerIds = Object.keys(QUESTS).filter((id) =>
+    [
+      "python-string-greeting", "python-counter-loop", "python-grade-check",
+      "java-name-input", "java-ticket-loop", "java-attendance-check",
+      "cpp-string-input", "cpp-seat-loop", "cpp-temperature-check",
+      "php-order-greeting", "php-order-counter", "php-donation-check",
+      "web-button-string", "web-card-loop", "web-attendance-if",
+      "sql-name-string", "sql-ticket-counter", "sql-average-check",
+      "dsa-name-array", "dsa-score-loop", "dsa-average-if",
+      "git-message-string", "git-file-counter", "git-size-check",
+    ].includes(id)
+  );
+
+  for (const s of SKILLS) {
+    const quests = beginnerIds.filter((id) => QUESTS[id].skill === s.id);
+    assert.ok(quests.length >= 3, `${s.id} has only ${quests.length} beginner concept quests`);
+  }
+});
+
+test("daily selection is random but never selects the most recently completed quest", () => {
+  const noRecent = dailyQuestsFor(["Python"], 3, "python-string-greeting", () => 0);
+  assert.ok(noRecent.length > 0);
+  assert.ok(!noRecent.includes("python-string-greeting"));
+  assert.ok(noRecent.every((id) => QUESTS[id].skill === "Python"));
+
+  const secondChoice = dailyQuestsFor(["Python"], 3, "python-string-greeting", () => 0.99);
+  assert.ok(!secondChoice.includes("python-string-greeting"));
+});
+
 test("only returns quests from the selected skills", () => {
   for (const skills of [["Python"], ["Java"], ["Web", "Git"], ["SQL", "DSA", "C++"]]) {
     for (const s of skillOf(dailyQuestsFor(skills))) assert.ok(skills.includes(s), `${s} not in ${skills}`);

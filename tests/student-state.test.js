@@ -66,6 +66,7 @@ test("completing the selected non-Python first quest unlocks the first-quest bad
 
   assert.ok(result.badges.includes("hello-world"));
   assert.ok(GG.state.earned.includes("hello-world"));
+  assert.equal(GG.state.lastCompleted, "daily-java");
 });
 
 test("sign out clears the saved browser session and returns to welcome", () => {

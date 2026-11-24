@@ -121,7 +121,7 @@ const GG = (() => {
   const appRank = () => ranked(LB_APP, state.xp).find((r) => r.me).rank;
   const today = () => new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   // Today's daily quests, filtered to the student's skills (issue #3).
-  const dailyQuests = () => dailyQuestsFor(state.skills);
+  const dailyQuests = () => dailyQuestsFor(state.skills, 3, state.lastCompleted);
   const doneDaily = () => dailyQuests().filter((q) => state.doneToday.includes(q)).length;
 
   // ---------- actions ----------
@@ -147,6 +147,7 @@ const GG = (() => {
       out.streakUp = true;
     }
     if (!state.doneToday.includes(qid)) state.doneToday.push(qid);
+    state.lastCompleted = qid;
     if (q.classQuest && !state.classDone.includes(q.classQuest)) state.classDone.push(q.classQuest);
     state.xp += q.xp;
     if (q.classQuest) state.classXp += q.xp;
