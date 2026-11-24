@@ -22,6 +22,13 @@ test("every built-in skill has at least one daily quest", () => {
   for (const s of SKILLS) assert.ok(DAILY.some((id) => QUESTS[id].skill === s.id), `no daily quest for ${s.id}`);
 });
 
+test("every built-in skill has at least four additional daily quests", () => {
+  for (const s of SKILLS) {
+    const quests = DAILY.filter((id) => QUESTS[id].skill === s.id);
+    assert.ok(quests.length >= 5, `${s.id} has only ${quests.length} daily quests; expected at least 5 total`);
+  }
+});
+
 test("only returns quests from the selected skills", () => {
   for (const skills of [["Python"], ["Java"], ["Web", "Git"], ["SQL", "DSA", "C++"]]) {
     for (const s of skillOf(dailyQuestsFor(skills))) assert.ok(skills.includes(s), `${s} not in ${skills}`);
